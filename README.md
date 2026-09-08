@@ -24,6 +24,7 @@ Sistema de Punto de Venta (POS) completo para restaurantes, desarrollado con Rea
 - **Información del Cliente**: Mostrada en la factura impresa
 - **Ticket de Venta**: Con fecha, hora y detalles de la orden
 - **Impresión**: Compatible con impresoras térmicas
+- **Moneda**: Colones Costarricenses (₡)
 
 ### Interfaz de Usuario
 - **Responsive**: Funciona en diferentes tamaños de pantalla
@@ -332,6 +333,13 @@ server: {
 - ✅ Opción "Cliente de Contado" disponible
 - ✅ Nombre del cliente se muestra en encabezado de orden
 
+### Formato de Moneda (Validado)
+- ✅ Símbolo ₡ (Colón Costarricense) en todos los montos
+- ✅ Precios de productos muestran ₡
+- ✅ Promociones muestran ₡
+- ✅ Carrito y resumen muestran ₡
+- ✅ Ticket impreso usa ₡
+
 ## 🐛 Solución de Problemas
 
 ### "API Server no disponible"
@@ -370,6 +378,6 @@ Proyecto desarrollado para Restaurante Codex.
 
 ---
 
-**Última actualización**: 08 de Septiembre de 2026 - Validación completa de Client Registration
-**Versión**: 1.0.1
-**Estado**: ✅ Producción - Client Registration validado
+**Última actualización**: 08 de Septiembre de 2026 - Validación de Client Registration y cambio a Colones Costarricenses
+**Versión**: 1.0.2
+**Estado**: ✅ Producción - Client Registration validado, Moneda en ₡
