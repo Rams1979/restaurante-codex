@@ -1,0 +1,29 @@
+codigo,nombre,ingredientes,instrucciones,tiempo
+RC001,Mojito,"Ron blanco 45ml, Jugo de limón fresco 30ml, Azúcar 15g, Menta 8-10 hojas, Hielo crushed, Soda 100ml","1. Colocar menta y azúcar en vaso
+2. Machacar ligeramente
+3. Agregar Ron
+4. Llenar de hielo
+5. Completar con soda
+6. Remover",5min
+RC002,Margarita,"Tequila 50ml, Triple seco 25ml, Jugo de limón fresco 25ml, Jarabe simple 15ml, Hielo, Sal en borde","1. Empapar borde del vaso con limón
+2. Pasar por sal
+3. Agregar hielo
+4. Verter ingredientes
+5. Remover bien",5min
+RC003,Piña Colada,"Ron blanco 45ml, Crema de coco 30ml, Jugo de piña 90ml, Hielo, Sombrilla decorativa","1. Agregar hielo al vaso
+2. Verter Ron
+3. Agregar crema de coco
+4. Completar con jugo de piña
+5. Remover
+6. Decorar",5min
+RC004,Daiquiri,"Ron blanco 45ml, Jugo de limón fresco 30ml, Jarabe simple 20ml, Hielo, Limón para decorar","1. Agregar hielo
+2. Verter Ron
+3. Agregar jugo de limón
+4. Agregar jarabe
+5. Remover bien
+6. Decorar con limón",5min
+RC005,Cosmopolitan,"Vodka 45ml, Licor de naranja 20ml, Jugo de arándano 30ml, Jugo de limón fresco 15ml, Hielo, Naranja para decorar","1. Agregar hielo
+2. Verter todos los ingredientes
+3. Remover vigorosamente
+4. Colar en vaso
+5. Decorar con naranja",5min

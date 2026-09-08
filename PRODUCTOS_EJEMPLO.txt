@@ -1,0 +1,19 @@
+INSTRUCCIONES PARA CREAR EL ARCHIVO EXCEL:
+
+1. Abre Excel o Google Sheets
+2. Crea una hoja con estas columnas:
+   - Columna A: codigo
+   - Columna B: descripcion
+   - Columna C: precio
+   - Columna D: inventario
+
+3. Agrega estos datos:
+   001 | Coca Cola 2L | 45.50 | 15
+   002 | Sprite 2L | 40.00 | 12
+   003 | Fanta Naranja 2L | 38.50 | 18
+   004 | Agua embotellada 1L | 15.00 | 50
+   005 | Jugo Natural Naranja | 28.00 | 25
+
+4. Guarda como productos.xlsx en la carpeta codex-pos
+
+5. Carga ese archivo en la aplicación

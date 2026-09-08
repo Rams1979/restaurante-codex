@@ -1,0 +1,21 @@
+codigo,descripcion,precio,inventario,receta
+001,Coca Cola 2L,45.50,15,
+002,Sprite 2L,40.00,12,
+003,Fanta Naranja 2L,38.50,18,
+004,Agua embotellada 1L,15.00,50,
+005,Jugo Natural Naranja,28.00,25,
+006,Café Molido 500g,65.00,8,
+007,Té Premium,35.50,20,
+008,Galletas Chocolate,22.00,30,
+009,Pan Integral,12.50,40,
+010,Leche 1L,28.00,35,
+011,Yogur Natural 500ml,18.50,22,
+012,Queso Fresco,95.00,5,
+013,Jamón Cocido,120.00,10,
+014,Pechuga Pollo,145.00,12,
+015,Carne Molida,160.00,8,
+101,Mojito,65.00,25,RC001
+102,Margarita,70.00,20,RC002
+103,Piña Colada,75.00,18,RC003
+104,Daiquiri,65.00,22,RC004
+105,Cosmopolitan,80.00,15,RC005
