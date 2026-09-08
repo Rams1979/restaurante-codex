@@ -316,6 +316,22 @@ server: {
 - Tablet
 - Mobile (interfaz responsive)
 
+## ✅ Validación de Funcionalidades
+
+### Cliente Registration (Validado)
+- ✅ Modal de registro abre sin errores
+- ✅ Todos los campos aceptan entrada correctamente
+- ✅ POST request a `/api/clients` completa exitosamente
+- ✅ Datos del cliente persisten en clientes.txt
+- ✅ Timestamp se registra correctamente
+- ✅ Sin errores en consola del navegador
+
+### Cliente Selector (Listo)
+- ✅ Selector de clientes aparece al seleccionar mesa/barra
+- ✅ Búsqueda funciona por nombre y celular
+- ✅ Opción "Cliente de Contado" disponible
+- ✅ Nombre del cliente se muestra en encabezado de orden
+
 ## 🐛 Solución de Problemas
 
 ### "API Server no disponible"
@@ -354,6 +370,6 @@ Proyecto desarrollado para Restaurante Codex.
 
 ---
 
-**Última actualización**: 08 de Septiembre de 2026
-**Versión**: 1.0.0
-**Estado**: ✅ Producción
+**Última actualización**: 08 de Septiembre de 2026 - Validación completa de Client Registration
+**Versión**: 1.0.1
+**Estado**: ✅ Producción - Client Registration validado
