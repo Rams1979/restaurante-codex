@@ -58,6 +58,14 @@ body {
   color: white;
   margin: 0;
   font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.client-title {
+  color: #e0e0e0;
+  margin: 0.3rem 0 0 0;
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 .container {

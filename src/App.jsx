@@ -228,7 +228,12 @@ function App() {
                 <button className="back-btn" onClick={handleBackToTables}>
                   ← Mesas
                 </button>
-                <h2 className="table-title">{selectedTable.name}</h2>
+                <div>
+                  <h2 className="table-title">{selectedTable.name}</h2>
+                  {selectedClient?.nombre && (
+                    <p className="client-title">👤 {selectedClient.isContado ? 'Cliente de Contado' : selectedClient.nombre}</p>
+                  )}
+                </div>
               </div>
 
               <div className="search-box">
