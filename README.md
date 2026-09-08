@@ -29,6 +29,8 @@ Sistema de Punto de Venta (POS) completo para restaurantes, desarrollado con Rea
 - **Responsive**: Funciona en diferentes tamaños de pantalla
 - **Búsqueda**: De productos por código o descripción
 - **Gestión Visual**: Indicadores de stock y ocupación
+- **Encabezado Dinámico**: Muestra nombre de mesa/barra y cliente seleccionado
+- **Cliente en Pantalla**: Identificación clara del cliente durante la orden
 - **Modo Impresión**: Estilos optimizados para tickets
 
 ## 🚀 Instalación
@@ -114,6 +116,29 @@ codex-pos/
 3. Buscar y agregar productos
 4. Ajustar cantidades si es necesario
 5. Hacer clic en "🖨️ Imprimir" para generar ticket
+
+### Pantalla de Productos
+La pantalla de productos muestra:
+
+```
+← Mesas    Mesa 5
+           👤 Rolando Mata
+
+Buscar por código o descripción...
+
+[Productos en grid]
+```
+
+**Encabezado dinámico:**
+- Nombre de la mesa/barra (Mesa 1, Barra 5, etc.)
+- Nombre del cliente seleccionado con ícono 👤
+- "Cliente de Contado" si no hay cliente registrado
+- Actualización automática cuando se cambia de cliente
+
+**Búsqueda de productos:**
+- Filtra por código (número del producto)
+- Filtra por descripción (nombre del producto)
+- Búsqueda en tiempo real mientras escribe
 
 ## 📊 Cálculos
 
@@ -315,6 +340,9 @@ server: {
 - **Persistencia**: Archivos de texto con formato JSON
 - **Formato de Impresión**: CSS @media print
 - **Inventario**: Se rastrea en `inventoryUsed` state
+- **Cliente en Encabezado**: Se renderiza dinámicamente desde `selectedClient` state
+- **Selector de Clientes**: Modal con búsqueda en tiempo real
+- **API Server**: Node.js HTTP server en puerto 3002 con CORS habilitado
 
 ## 🤝 Contribuciones
 
