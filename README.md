@@ -146,13 +146,13 @@ Buscar por código o descripción...
 ```
 Producto: Coca Cola
 Cantidad: 1
-Precio Unitario: $1,300.00
-Subtotal: $1,300.00
+Precio Unitario: ₡1,300.00
+Subtotal: ₡1,300.00
 
-Impuesto (13%): $169.00
-Servicio (10% - solo mesas): $130.00
+Impuesto (13%): ₡169.00
+Servicio (10% - solo mesas): ₡130.00
 
-TOTAL: $1,599.00
+TOTAL: ₡1,599.00
 ```
 
 ### Impuesto
@@ -275,14 +275,14 @@ Hora: 16:45:30
 
 ─────────────────────────
 Código  Descripción  Cant   Total
-1       Coca Cola    1      $1,300.00
+1       Coca Cola    1      ₡1,300.00
 ─────────────────────────
 
-Subtotal:          $1,300.00
-Impuesto (13%):      $169.00
-Servicio (10%):      $130.00
+Subtotal:          ₡1,300.00
+Impuesto (13%):      ₡169.00
+Servicio (10%):      ₡130.00
 ═════════════════════════
-TOTAL:             $1,599.00
+TOTAL:             ₡1,599.00
 ═════════════════════════
 ```
 

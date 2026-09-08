@@ -18,7 +18,7 @@ function Cart({ items, tableInfo, locationType, clientInfo, onRemove, onUpdateQu
 
   const handleCloseSale = () => {
     if (confirm('¿Cobrar esta orden?')) {
-      alert(`✅ Orden de ${tableInfo} cobrada por $${total.toFixed(2)}`)
+      alert(`✅ Orden de ${tableInfo} cobrada por ₡${total.toFixed(2)}`)
       onClear()
     }
   }
@@ -68,7 +68,7 @@ function Cart({ items, tableInfo, locationType, clientInfo, onRemove, onUpdateQu
                 <div className="item-info">
                   <p className="item-code">{item.codigo}</p>
                   <p className="item-desc">{itemDesc}</p>
-                  <p className="item-price">${itemPrice.toFixed(2)}</p>
+                  <p className="item-price">₡{itemPrice.toFixed(2)}</p>
                 </div>
 
                 <div className="item-quantity">
@@ -93,7 +93,7 @@ function Cart({ items, tableInfo, locationType, clientInfo, onRemove, onUpdateQu
                 </div>
 
                 <div className="item-total">
-                  ${(itemPrice * item.cantidad).toFixed(2)}
+                  ₡{(itemPrice * item.cantidad).toFixed(2)}
                 </div>
 
                 <button
@@ -110,21 +110,21 @@ function Cart({ items, tableInfo, locationType, clientInfo, onRemove, onUpdateQu
           <div className="cart-summary">
             <div className="summary-row">
               <span>Subtotal:</span>
-              <span>${subtotal.toFixed(2)}</span>
+              <span>₡{subtotal.toFixed(2)}</span>
             </div>
             <div className="summary-row">
               <span>Impuesto (13%):</span>
-              <span>${impuesto.toFixed(2)}</span>
+              <span>₡{impuesto.toFixed(2)}</span>
             </div>
             {locationType === 'table' && (
               <div className="summary-row">
                 <span>Servicio (10%):</span>
-                <span>${servicio.toFixed(2)}</span>
+                <span>₡{servicio.toFixed(2)}</span>
               </div>
             )}
             <div className="summary-row total">
               <span>Total:</span>
-              <span>${total.toFixed(2)}</span>
+              <span>₡{total.toFixed(2)}</span>
             </div>
           </div>
 

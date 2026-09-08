@@ -34,7 +34,7 @@ function ProductList({ products, onAddToCart, recipes = {}, onShowRecipe, invent
             {product.promoNombre && product.promoCantidad > 0 && (
               <div className="product-promo">
                 <p className="promo-name">🎁 {product.promoNombre}</p>
-                <p className="promo-info">{product.promoCantidad} x ${product.precio.toFixed(2)} = ${product.promoPrecio.toFixed(2)}</p>
+                <p className="promo-info">{product.promoCantidad} x ₡{product.precio.toFixed(2)} = ₡{product.promoPrecio.toFixed(2)}</p>
                 <button
                   className="add-button promo-button"
                   onClick={() => onAddToCart({ ...product, isPromo: true })}
@@ -47,7 +47,7 @@ function ProductList({ products, onAddToCart, recipes = {}, onShowRecipe, invent
 
             <div className="product-footer">
               <span className="product-price">
-                ${product.precio.toFixed(2)}
+                ₡{product.precio.toFixed(2)}
               </span>
               <button
                 className="add-button"
