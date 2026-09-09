@@ -83,14 +83,9 @@ function updateClient(clientId, updates) {
   return client
 }
 
-// Productos
+// Productos (solo activos)
 function getProducts() {
   const stmt = db.prepare('SELECT * FROM productos WHERE activo = 1 ORDER BY codigo')
-  return stmt.all()
-}
-
-function getAllProducts() {
-  const stmt = db.prepare('SELECT * FROM productos ORDER BY codigo')
   return stmt.all()
 }
 
