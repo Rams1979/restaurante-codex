@@ -481,7 +481,7 @@ const server = http.createServer((req, res) => {
   res.end(JSON.stringify({ error: 'Not found' }))
 })
 
-const API_PORT = 3002
+const API_PORT = 3003
 server.listen(API_PORT, () => {
   console.log(`✅ API Server corriendo en http://localhost:${API_PORT}`)
 })
