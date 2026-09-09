@@ -1,9 +1,9 @@
-# 🍽️ Restaurante Codex - Sistema POS v2.0
+# 🍽️ Restaurante Codex - Sistema POS v2.1
 
-**Sistema de Punto de Venta (POS) moderno para restaurantes** con base de datos SQLite, gestión completa de inventario, clientes y facturación.
+**Sistema de Punto de Venta (POS) moderno para restaurantes** con base de datos SQLite, gestión completa de inventario, clientes, facturación y control de productos activos/inactivos.
 
-**Versión**: 2.0.0  
-**Estado**: ✅ Producción - Sistema con base de datos SQLite, sin dependencia de archivos  
+**Versión**: 2.1.0  
+**Estado**: ✅ Producción - Sistema con SQLite, gestión de activos/inactivos, sin archivos Excel  
 **Última actualización**: 09 de Septiembre de 2026
 
 ---
@@ -37,8 +37,15 @@
 - **Búsqueda Rápida**: Filtros por código o descripción de producto
 - **Encabezado Dinámico**: Muestra mesa/barra y cliente actual
 - **Gestión Visual**: Indicadores de stock y ocupación
-- **Botones Optimizados**: Edición (✏️) y eliminación (🗑️) compactos
+- **Botones Optimizados**: Edición (✏️) e inactivación (⊘) compactos
 - **Diseño Intuitivo**: Interfaz limpia y fácil de usar
+- **Tema Oscuro**: Fondo gris difuminado con textos con sombra
+
+### 🔒 Gestión de Productos Activos/Inactivos
+- **Inactivar en lugar de eliminar**: Soft delete, datos persistentes
+- **Filtrado automático**: Solo productos activos en órdenes
+- **Recuperación posible**: Productos inactivos recuperables
+- **Gestión segura**: No se pueden seleccionar en órdenes
 
 ### 🗄️ Base de Datos SQLite
 - **5 Tablas**: productos, recetas, clientes, órdenes, órdenes_items
@@ -139,9 +146,20 @@ Los cambios se guardan inmediatamente en SQLite.
 Hacer clic en "🍹 Gestionar Recetas":
 ├── Agregar: Código, nombre, ingredientes, instrucciones
 ├── Editar: Clic en ✏️ → Modificar → 💾 Guardar
-└── Eliminar: Clic en 🗑️ → Confirmar
+└── Inactivar: Clic en ⊘ → Confirmar (soft delete)
 ```
 Soporta cócteles y bebidas especiales.
+
+### 4️⃣ Inactivar Productos
+```
+En "📦 Gestionar Productos":
+├── Clic en ⊘ (botón amarillo)
+├── Confirmar inactivación
+└── Producto NO aparece en órdenes
+```
+- ✅ Datos NO se pierden
+- ✅ Recuperables si es necesario
+- ✅ No seleccionables en nuevas órdenes
 
 ### 4️⃣ Registrar Clientes
 ```
@@ -506,6 +524,14 @@ Proyecto desarrollado para **Restaurante Codex**.
 ---
 
 ## 📋 Changelog
+
+### v2.1.0 (09 Septiembre 2026)
+✅ Sistema activo/inactivo para productos  
+✅ Soft delete (datos no se pierden)  
+✅ Inactivación en lugar de eliminación  
+✅ Filtrado automático en órdenes  
+✅ Tema oscuro con gradiente gris difuminado  
+✅ Interfaz mejorada con alineación perfecta  
 
 ### v2.0.0 (09 Septiembre 2026)
 ✅ Migración completa a SQLite  
