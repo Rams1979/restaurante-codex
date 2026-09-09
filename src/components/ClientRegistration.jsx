@@ -5,7 +5,8 @@ function ClientRegistration({ onClientRegistered, onCancel }) {
     nombre: '',
     celular: '',
     edad: '',
-    correo: ''
+    correo: '',
+    descuento: 0
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -101,6 +102,19 @@ function ClientRegistration({ onClientRegistered, onCancel }) {
               value={formData.correo}
               onChange={handleChange}
               placeholder="correo@ejemplo.com"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Descuento (%) - 0 a 10</label>
+            <input
+              type="number"
+              name="descuento"
+              value={formData.descuento}
+              onChange={handleChange}
+              placeholder="0"
+              min="0"
+              max="10"
             />
           </div>
 

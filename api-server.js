@@ -39,6 +39,11 @@ function saveClient(client) {
       throw new Error('Faltan campos requeridos')
     }
 
+    let descuento = parseInt(client.descuento) || 0
+    if (descuento < 0 || descuento > 10) {
+      throw new Error('El descuento debe estar entre 0 y 10')
+    }
+
     const clients = readClients()
     const newClient = {
       id: Date.now(),
@@ -46,6 +51,7 @@ function saveClient(client) {
       celular: client.celular,
       edad: client.edad,
       correo: client.correo,
+      descuento: descuento,
       fecha: new Date().toISOString()
     }
     clients.push(newClient)
@@ -61,9 +67,43 @@ function saveClient(client) {
   }
 }
 
+function updateClient(clientId, updates) {
+  try {
+    const clients = readClients()
+    const clientIndex = clients.findIndex(c => c.id === clientId)
+
+    if (clientIndex === -1) {
+      throw new Error('Cliente no encontrado')
+    }
+
+    const client = clients[clientIndex]
+
+    // Solo actualizar campos permitidos (no el nombre ni el ID)
+    if (updates.celular !== undefined) client.celular = updates.celular
+    if (updates.edad !== undefined) client.edad = updates.edad
+    if (updates.correo !== undefined) client.correo = updates.correo
+    if (updates.descuento !== undefined) {
+      let descuento = parseInt(updates.descuento) || 0
+      if (descuento < 0 || descuento > 10) {
+        throw new Error('El descuento debe estar entre 0 y 10')
+      }
+      client.descuento = descuento
+    }
+
+    const lines = clients.map(c => JSON.stringify(c))
+    fs.writeFileSync(CLIENTS_FILE, lines.join('\n') + '\n', 'utf-8')
+
+    console.log('Cliente actualizado:', clientId)
+    return client
+  } catch (err) {
+    console.error('Error actualizando cliente:', err.message)
+    throw err
+  }
+}
+
 const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
   res.setHeader('Content-Type', 'application/json')
 
@@ -107,6 +147,41 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify(newClient))
       } catch (err) {
         console.error('Error en POST:', err.message)
+        res.writeHead(400)
+        res.end(JSON.stringify({ error: err.message }))
+      }
+    })
+    req.on('error', err => {
+      console.error('Error en request:', err.message)
+      res.writeHead(500)
+      res.end(JSON.stringify({ error: 'Request error' }))
+    })
+    return
+  }
+
+  const putMatch = req.url.match(/^\/api\/clients\/(\d+)$/)
+  if (putMatch && req.method === 'PUT') {
+    const clientId = parseInt(putMatch[1])
+    let body = ''
+    req.on('data', chunk => {
+      body += chunk.toString()
+    })
+    req.on('end', () => {
+      try {
+        console.log('PUT /api/clients/:id - Datos recibidos:', body)
+        if (!body) {
+          res.writeHead(400)
+          res.end(JSON.stringify({ error: 'Body vacío' }))
+          return
+        }
+        const updateData = JSON.parse(body)
+        console.log('Datos parseados:', updateData)
+        const updatedClient = updateClient(clientId, updateData)
+        console.log('Cliente actualizado exitosamente:', clientId)
+        res.writeHead(200)
+        res.end(JSON.stringify(updatedClient))
+      } catch (err) {
+        console.error('Error en PUT:', err.message)
         res.writeHead(400)
         res.end(JSON.stringify({ error: err.message }))
       }

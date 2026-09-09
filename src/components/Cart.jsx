@@ -5,9 +5,12 @@ function Cart({ items, tableInfo, locationType, clientInfo, onRemove, onUpdateQu
     return sum + itemPrice * item.cantidad
   }, 0)
 
-  const impuesto = subtotal * 0.13
-  const servicio = locationType === 'table' ? subtotal * 0.10 : 0
-  const total = subtotal + impuesto + servicio
+  const descuentoPorcentaje = clientInfo?.descuento || 0
+  const descuento = subtotal * (descuentoPorcentaje / 100)
+  const subtotalConDescuento = subtotal - descuento
+  const impuesto = subtotalConDescuento * 0.13
+  const servicio = locationType === 'table' ? subtotalConDescuento * 0.10 : 0
+  const total = subtotalConDescuento + impuesto + servicio
 
   const handlePrint = () => {
     window.print()
@@ -34,6 +37,7 @@ function Cart({ items, tableInfo, locationType, clientInfo, onRemove, onUpdateQu
             <p><strong>Cliente:</strong> {clientInfo.nombre}</p>
             {clientInfo.celular && <p><strong>Celular:</strong> {clientInfo.celular}</p>}
             {clientInfo.correo && <p><strong>Correo:</strong> {clientInfo.correo}</p>}
+            {clientInfo.descuento > 0 && <p><strong>Descuento:</strong> {clientInfo.descuento}%</p>}
           </div>
         )}
         <p className="print-datetime">
@@ -111,6 +115,16 @@ function Cart({ items, tableInfo, locationType, clientInfo, onRemove, onUpdateQu
             <div className="summary-row">
               <span>Subtotal:</span>
               <span>₡{subtotal.toFixed(2)}</span>
+            </div>
+            {descuentoPorcentaje > 0 && (
+              <div className="summary-row discount-row">
+                <span>Descuento ({descuentoPorcentaje}%):</span>
+                <span>-₡{descuento.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="summary-row">
+              <span>Subtotal c/ Descuento:</span>
+              <span>₡{subtotalConDescuento.toFixed(2)}</span>
             </div>
             <div className="summary-row">
               <span>Impuesto (13%):</span>
