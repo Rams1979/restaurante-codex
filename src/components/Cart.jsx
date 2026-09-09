@@ -12,15 +12,36 @@ function Cart({ items, tableInfo, locationType, clientInfo, onRemove, onUpdateQu
   const servicio = locationType === 'table' ? subtotalConDescuento * 0.10 : 0
   const total = subtotalConDescuento + impuesto + servicio
 
-  const handlePrint = () => {
+  const updateInventory = async () => {
+    try {
+      const itemsToUpdate = items.map(item => ({
+        codigo: item.codigo,
+        cantidad: item.cantidad
+      }))
+      const response = await fetch('/api/inventory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(itemsToUpdate)
+      })
+      if (!response.ok) {
+        throw new Error('Error al actualizar inventario')
+      }
+    } catch (err) {
+      console.error('Error updating inventory:', err)
+    }
+  }
+
+  const handlePrint = async () => {
+    await updateInventory()
     window.print()
     setTimeout(() => {
       onClear()
     }, 500)
   }
 
-  const handleCloseSale = () => {
+  const handleCloseSale = async () => {
     if (confirm('¿Cobrar esta orden?')) {
+      await updateInventory()
       alert(`✅ Orden de ${tableInfo} cobrada por ₡${total.toFixed(2)}`)
       onClear()
     }

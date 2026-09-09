@@ -211,6 +211,17 @@ function deleteRecipe(codigo) {
   return { message: 'Receta eliminada' }
 }
 
+function updateInventory(items) {
+  for (const item of items) {
+    const stmt = db.prepare('UPDATE productos SET inventario = inventario - ? WHERE codigo = ?')
+    const result = stmt.run(item.cantidad, item.codigo)
+    if (result.changes === 0) {
+      throw new Error(`Producto no encontrado: ${item.codigo}`)
+    }
+  }
+  return { message: 'Inventario actualizado' }
+}
+
 const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS')
@@ -444,6 +455,25 @@ const server = http.createServer((req, res) => {
       res.writeHead(400)
       res.end(JSON.stringify({ error: err.message }))
     }
+    return
+  }
+
+  // POST /api/inventory (Actualizar inventario al cobrar)
+  if (req.url === '/api/inventory' && req.method === 'POST') {
+    let body = ''
+    req.on('data', chunk => { body += chunk.toString() })
+    req.on('end', () => {
+      try {
+        const items = JSON.parse(body)
+        const result = updateInventory(items)
+        res.writeHead(200)
+        res.end(JSON.stringify(result))
+      } catch (err) {
+        console.error('POST /api/inventory error:', err.message)
+        res.writeHead(400)
+        res.end(JSON.stringify({ error: err.message }))
+      }
+    })
     return
   }
 
