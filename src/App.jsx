@@ -6,6 +6,8 @@ import Cart from './components/Cart'
 import RecipeModal from './components/RecipeModal'
 import ClientRegistration from './components/ClientRegistration'
 import ClientSelector from './components/ClientSelector'
+import ProductsManager from './components/ProductsManager'
+import RecipesManager from './components/RecipesManager'
 import './App.css'
 
 function App() {
@@ -19,6 +21,8 @@ function App() {
   const [showClientRegistration, setShowClientRegistration] = useState(false)
   const [showClientSelector, setShowClientSelector] = useState(false)
   const [selectedClient, setSelectedClient] = useState({})
+  const [showProductsManager, setShowProductsManager] = useState(false)
+  const [showRecipesManager, setShowRecipesManager] = useState(false)
 
   const handleFileUpload = (uploadedProducts) => {
     setProducts(uploadedProducts)
@@ -194,11 +198,24 @@ function App() {
         />
       )}
 
+      {showProductsManager && (
+        <ProductsManager onClose={() => setShowProductsManager(false)} />
+      )}
+
+      {showRecipesManager && (
+        <RecipesManager onClose={() => setShowRecipesManager(false)} />
+      )}
+
       <div className="container">
         {!selectedTable ? (
           <>
             <div className="top-buttons">
-              <FileUpload onFileUpload={handleFileUpload} onLoadRecipes={handleLoadRecipes} />
+              <FileUpload
+                onFileUpload={handleFileUpload}
+                onLoadRecipes={handleLoadRecipes}
+                onShowProductsManager={() => setShowProductsManager(true)}
+                onShowRecipesManager={() => setShowRecipesManager(true)}
+              />
               <button
                 className="btn-new-client-top"
                 onClick={() => setShowClientRegistration(true)}

@@ -83,6 +83,134 @@ function updateClient(clientId, updates) {
   return client
 }
 
+// Productos
+function getProducts() {
+  const stmt = db.prepare('SELECT * FROM productos ORDER BY codigo')
+  return stmt.all()
+}
+
+function addProduct(productData) {
+  if (!productData.codigo || !productData.descripcion || !productData.precio) {
+    throw new Error('Faltan campos requeridos')
+  }
+
+  const stmt = db.prepare(`
+    INSERT INTO productos (codigo, descripcion, precio, inventario, receta, peso, promoNombre, promoCantidad, promoPrecio)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `)
+
+  const result = stmt.run(
+    productData.codigo,
+    productData.descripcion,
+    productData.precio,
+    productData.inventario || 0,
+    productData.receta || null,
+    productData.peso || null,
+    productData.promoNombre || null,
+    productData.promoCantidad || null,
+    productData.promoPrecio || null
+  )
+
+  return db.prepare('SELECT * FROM productos WHERE codigo = ?').get(productData.codigo)
+}
+
+function updateProduct(codigo, updates) {
+  const stmt = db.prepare(`
+    UPDATE productos
+    SET descripcion = ?, precio = ?, inventario = ?, receta = ?, peso = ?, promoNombre = ?, promoCantidad = ?, promoPrecio = ?
+    WHERE codigo = ?
+  `)
+
+  const result = stmt.run(
+    updates.descripcion,
+    updates.precio,
+    updates.inventario,
+    updates.receta || null,
+    updates.peso || null,
+    updates.promoNombre || null,
+    updates.promoCantidad || null,
+    updates.promoPrecio || null,
+    codigo
+  )
+
+  if (result.changes === 0) {
+    throw new Error('Producto no encontrado')
+  }
+
+  return db.prepare('SELECT * FROM productos WHERE codigo = ?').get(codigo)
+}
+
+function deleteProduct(codigo) {
+  const stmt = db.prepare('DELETE FROM productos WHERE codigo = ?')
+  const result = stmt.run(codigo)
+
+  if (result.changes === 0) {
+    throw new Error('Producto no encontrado')
+  }
+
+  return { message: 'Producto eliminado' }
+}
+
+// Recetas
+function getRecipes() {
+  const stmt = db.prepare('SELECT * FROM recetas ORDER BY codigo')
+  return stmt.all()
+}
+
+function addRecipe(recipeData) {
+  if (!recipeData.codigo || !recipeData.nombre) {
+    throw new Error('Faltan campos requeridos')
+  }
+
+  const stmt = db.prepare(`
+    INSERT INTO recetas (codigo, nombre, ingredientes, instrucciones, tiempo)
+    VALUES (?, ?, ?, ?, ?)
+  `)
+
+  stmt.run(
+    recipeData.codigo,
+    recipeData.nombre,
+    recipeData.ingredientes || null,
+    recipeData.instrucciones || null,
+    recipeData.tiempo || null
+  )
+
+  return db.prepare('SELECT * FROM recetas WHERE codigo = ?').get(recipeData.codigo)
+}
+
+function updateRecipe(codigo, updates) {
+  const stmt = db.prepare(`
+    UPDATE recetas
+    SET nombre = ?, ingredientes = ?, instrucciones = ?, tiempo = ?
+    WHERE codigo = ?
+  `)
+
+  const result = stmt.run(
+    updates.nombre,
+    updates.ingredientes || null,
+    updates.instrucciones || null,
+    updates.tiempo || null,
+    codigo
+  )
+
+  if (result.changes === 0) {
+    throw new Error('Receta no encontrada')
+  }
+
+  return db.prepare('SELECT * FROM recetas WHERE codigo = ?').get(codigo)
+}
+
+function deleteRecipe(codigo) {
+  const stmt = db.prepare('DELETE FROM recetas WHERE codigo = ?')
+  const result = stmt.run(codigo)
+
+  if (result.changes === 0) {
+    throw new Error('Receta no encontrada')
+  }
+
+  return { message: 'Receta eliminada' }
+}
+
 const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS')
@@ -176,6 +304,146 @@ const server = http.createServer((req, res) => {
       res.writeHead(500)
       res.end(JSON.stringify({ error: 'Request error' }))
     })
+    return
+  }
+
+  // GET /api/products
+  if (req.url === '/api/products' && req.method === 'GET') {
+    try {
+      const products = getProducts()
+      res.writeHead(200)
+      res.end(JSON.stringify(products))
+    } catch (err) {
+      console.error('GET /api/products error:', err)
+      res.writeHead(500)
+      res.end(JSON.stringify({ error: 'Server error' }))
+    }
+    return
+  }
+
+  // POST /api/products
+  if (req.url === '/api/products' && req.method === 'POST') {
+    let body = ''
+    req.on('data', chunk => { body += chunk.toString() })
+    req.on('end', () => {
+      try {
+        const productData = JSON.parse(body)
+        const newProduct = addProduct(productData)
+        res.writeHead(201)
+        res.end(JSON.stringify(newProduct))
+      } catch (err) {
+        console.error('POST /api/products error:', err.message)
+        res.writeHead(400)
+        res.end(JSON.stringify({ error: err.message }))
+      }
+    })
+    return
+  }
+
+  // PUT /api/products/:codigo
+  const putProductMatch = req.url.match(/^\/api\/products\/(.+)$/)
+  if (putProductMatch && req.method === 'PUT') {
+    const codigo = decodeURIComponent(putProductMatch[1])
+    let body = ''
+    req.on('data', chunk => { body += chunk.toString() })
+    req.on('end', () => {
+      try {
+        const updateData = JSON.parse(body)
+        const updatedProduct = updateProduct(codigo, updateData)
+        res.writeHead(200)
+        res.end(JSON.stringify(updatedProduct))
+      } catch (err) {
+        console.error('PUT /api/products error:', err.message)
+        res.writeHead(400)
+        res.end(JSON.stringify({ error: err.message }))
+      }
+    })
+    return
+  }
+
+  // DELETE /api/products/:codigo
+  const deleteProductMatch = req.url.match(/^\/api\/products\/(.+)$/)
+  if (deleteProductMatch && req.method === 'DELETE') {
+    try {
+      const codigo = decodeURIComponent(deleteProductMatch[1])
+      const result = deleteProduct(codigo)
+      res.writeHead(200)
+      res.end(JSON.stringify(result))
+    } catch (err) {
+      console.error('DELETE /api/products error:', err.message)
+      res.writeHead(400)
+      res.end(JSON.stringify({ error: err.message }))
+    }
+    return
+  }
+
+  // GET /api/recipes
+  if (req.url === '/api/recipes' && req.method === 'GET') {
+    try {
+      const recipes = getRecipes()
+      res.writeHead(200)
+      res.end(JSON.stringify(recipes))
+    } catch (err) {
+      console.error('GET /api/recipes error:', err)
+      res.writeHead(500)
+      res.end(JSON.stringify({ error: 'Server error' }))
+    }
+    return
+  }
+
+  // POST /api/recipes
+  if (req.url === '/api/recipes' && req.method === 'POST') {
+    let body = ''
+    req.on('data', chunk => { body += chunk.toString() })
+    req.on('end', () => {
+      try {
+        const recipeData = JSON.parse(body)
+        const newRecipe = addRecipe(recipeData)
+        res.writeHead(201)
+        res.end(JSON.stringify(newRecipe))
+      } catch (err) {
+        console.error('POST /api/recipes error:', err.message)
+        res.writeHead(400)
+        res.end(JSON.stringify({ error: err.message }))
+      }
+    })
+    return
+  }
+
+  // PUT /api/recipes/:codigo
+  const putRecipeMatch = req.url.match(/^\/api\/recipes\/(.+)$/)
+  if (putRecipeMatch && req.method === 'PUT') {
+    const codigo = decodeURIComponent(putRecipeMatch[1])
+    let body = ''
+    req.on('data', chunk => { body += chunk.toString() })
+    req.on('end', () => {
+      try {
+        const updateData = JSON.parse(body)
+        const updatedRecipe = updateRecipe(codigo, updateData)
+        res.writeHead(200)
+        res.end(JSON.stringify(updatedRecipe))
+      } catch (err) {
+        console.error('PUT /api/recipes error:', err.message)
+        res.writeHead(400)
+        res.end(JSON.stringify({ error: err.message }))
+      }
+    })
+    return
+  }
+
+  // DELETE /api/recipes/:codigo
+  const deleteRecipeMatch = req.url.match(/^\/api\/recipes\/(.+)$/)
+  if (deleteRecipeMatch && req.method === 'DELETE') {
+    try {
+      const codigo = decodeURIComponent(deleteRecipeMatch[1])
+      const result = deleteRecipe(codigo)
+      res.writeHead(200)
+      res.end(JSON.stringify(result))
+    } catch (err) {
+      console.error('DELETE /api/recipes error:', err.message)
+      res.writeHead(400)
+      res.end(JSON.stringify({ error: err.message }))
+    }
     return
   }
 

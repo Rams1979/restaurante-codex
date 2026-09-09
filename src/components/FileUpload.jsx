@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import * as XLSX from 'xlsx'
 
-function FileUpload({ onFileUpload, onLoadRecipes }) {
+function FileUpload({ onFileUpload, onLoadRecipes, onShowProductsManager, onShowRecipesManager }) {
   const fileInputRef = useRef(null)
   const recipeFileInputRef = useRef(null)
 
@@ -121,6 +121,12 @@ function FileUpload({ onFileUpload, onLoadRecipes }) {
             📖 Cargar Recetas
           </label>
         </div>
+        <button className="upload-button" onClick={onShowProductsManager}>
+          📦 Gestionar Productos
+        </button>
+        <button className="upload-button" onClick={onShowRecipesManager}>
+          🍹 Gestionar Recetas
+        </button>
       </div>
     </div>
   )
