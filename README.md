@@ -57,7 +57,12 @@ cd codex-pos
 npm install
 ```
 
-3. **Iniciar los servidores**
+3. **Inicializar la base de datos SQLite**
+```bash
+node db-init.js
+```
+
+4. **Iniciar los servidores**
 ```bash
 npm run dev
 ```
@@ -66,6 +71,8 @@ O usar el script PowerShell:
 ```powershell
 .\start.ps1
 ```
+
+**Nota**: El servidor API (puerto 3002) ahora usa SQLite en lugar de archivos.
 
 ## 📁 Estructura del Proyecto
 
@@ -214,21 +221,32 @@ TOTAL: ₡1,535.04
 - **Es configurable**: Por cliente en registro/edición
 - **Es visible**: En selector de clientes y ticket impreso
 
-## 🗄️ Base de Datos
+## 🗄️ Base de Datos (SQLite)
 
-### Formato de Clientes (clientes.txt)
-```json
-{"id":1234567890,"nombre":"Juan García","celular":"50377778888","edad":"35","correo":"juan@email.com","descuento":4,"fecha":"2026-09-08T15:30:45.123Z"}
+El sistema utiliza **SQLite** como base de datos principal, eliminando la dependencia de archivos de texto.
+
+### Inicialización
+```bash
+node db-init.js
 ```
 
-Cada línea es un cliente registrado en formato JSON con los siguientes campos:
-- `id`: ID único del cliente (timestamp)
-- `nombre`: Nombre completo del cliente
+### Tablas Principales
+- **productos**: Catálogo de productos con inventario
+- **recetas**: Recetas de cócteles y bebidas especiales
+- **clientes**: Información de clientes con descuentos
+- **ordenes**: Historial de órdenes/transacciones
+- **ordenes_items**: Detalles de artículos en cada orden
+
+### Campos de Clientes
+- `id`: ID único del cliente (autoincrement)
+- `nombre`: Nombre completo del cliente (UNIQUE)
 - `celular`: Número de celular
 - `edad`: Edad del cliente
 - `correo`: Correo electrónico
 - `descuento`: Descuento en porcentaje (0-10)
-- `fecha`: Fecha de registro en formato ISO 8601
+- `fecha`: Fecha de registro en ISO 8601
+
+Ver [SQLITE_MIGRATION.md](SQLITE_MIGRATION.md) para detalles completos del esquema.
 
 ## 🔌 API Server
 
@@ -479,6 +497,6 @@ Proyecto desarrollado para Restaurante Codex.
 
 ---
 
-**Última actualización**: 09 de Septiembre de 2026 - Optimización de UI (Botones de edición rediseñados)
-**Versión**: 1.1.1
-**Estado**: ✅ Producción - Sistema completo y optimizado para mejor UX
+**Última actualización**: 09 de Septiembre de 2026 - Implementación de SQLite
+**Versión**: 2.0.0
+**Estado**: ✅ Producción - Sistema con base de datos SQLite, sin archivos Excel
