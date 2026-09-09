@@ -1,9 +1,9 @@
-# 🍽️ Restaurante Codex - Sistema POS v2.1
+# 🍽️ Restaurante Codex - Sistema POS v2.2
 
-**Sistema de Punto de Venta (POS) moderno para restaurantes** con base de datos SQLite, gestión completa de inventario, clientes, facturación y control de productos activos/inactivos.
+**Sistema de Punto de Venta (POS) moderno para restaurantes** con base de datos SQLite, gestión completa de inventario con rebajo automático, clientes, facturación y control de productos activos/inactivos.
 
-**Versión**: 2.1.0  
-**Estado**: ✅ Producción - Sistema con SQLite, gestión de activos/inactivos, sin archivos Excel  
+**Versión**: 2.2.0  
+**Estado**: ✅ Producción - Sistema con SQLite, rebajo automático de inventario, gestión de activos/inactivos, sin archivos Excel  
 **Última actualización**: 09 de Septiembre de 2026
 
 ---
@@ -15,6 +15,8 @@
 - **10 Asientos de Barra**: Independientes con gestión de clientes registrados
 - **21 Productos en BD**: Catálogo completo con código, descripción, precio e inventario
 - **Inventario Dinámico**: Actualización en tiempo real al agregar/remover productos
+- **Rebajo Automático**: Al cobrar/imprimir, se actualiza automáticamente en SQLite
+- **Persistencia de Inventario**: Al cerrar y reabrirse, los cambios se mantienen
 - **Promociones**: Sistema integrado de promos con precios especiales por cantidad
 
 ### 👥 Gestión de Clientes (SQLite)
@@ -305,8 +307,8 @@ TOTAL:             ₡7,910.00
 ## 🔌 API REST
 
 ### Servidor
-- **Dirección**: http://localhost:3002
-- **Puerto**: 3002
+- **Dirección**: http://localhost:3003
+- **Puerto**: 3003
 - **CORS**: Habilitado para localhost
 
 ### Endpoints
@@ -332,6 +334,11 @@ DELETE /api/recipes/:codigo       # Eliminar
 GET    /api/clients               # Obtener todos
 POST   /api/clients               # Crear cliente
 PUT    /api/clients/:id           # Actualizar
+```
+
+#### Inventario
+```
+POST   /api/inventory             # Actualizar inventario (rebajo automático)
 ```
 
 ### Ejemplo: Agregar Producto
@@ -524,6 +531,13 @@ Proyecto desarrollado para **Restaurante Codex**.
 ---
 
 ## 📋 Changelog
+
+### v2.2.0 (09 Septiembre 2026)
+✅ Rebajo automático de inventario al cobrar/imprimir  
+✅ Endpoint POST /api/inventory para actualización en BD  
+✅ Persistencia de inventario en SQLite  
+✅ Verificación exitosa: inventario rebajado correctamente  
+✅ Puerto API cambiado a 3003 para evitar conflictos  
 
 ### v2.1.0 (09 Septiembre 2026)
 ✅ Sistema activo/inactivo para productos  
