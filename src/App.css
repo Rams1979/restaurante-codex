@@ -345,7 +345,7 @@ body {
 }
 
 .cart-count {
-  background: #667eea;
+  background: #5a5a5a;
   color: white;
   padding: 0.3rem 0.8rem;
   border-radius: 20px;
@@ -392,7 +392,7 @@ body {
 
 .item-code {
   font-weight: 700;
-  color: #667eea;
+  color: #5a5a5a;
   font-size: 0.85rem;
 }
 
@@ -403,7 +403,7 @@ body {
 }
 
 .item-price {
-  color: #667eea;
+  color: #5a5a5a;
   font-weight: 600;
 }
 
@@ -483,7 +483,7 @@ body {
 .summary-row.total {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #667eea;
+  color: #5a5a5a;
   padding-top: 0.5rem;
 }
 
@@ -504,12 +504,12 @@ body {
 }
 
 .btn-print {
-  background: #667eea;
+  background: #5a5a5a;
   color: white;
 }
 
 .btn-print:hover {
-  background: #5568d3;
+  background: #707070;
 }
 
 .btn-new {
@@ -1065,12 +1065,12 @@ body {
 }
 
 .discount-row {
-  color: #28a745;
+  color: #707070;
   font-weight: 600;
 }
 
 .discount-row span:last-child {
-  color: #28a745;
+  color: #707070;
 }
 
 @media print {
