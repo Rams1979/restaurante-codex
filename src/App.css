@@ -1035,11 +1035,12 @@ body {
   font-weight: 600;
   transition: all 0.3s ease;
   font-size: 0.75rem;
-  min-width: 36px;
+  width: 36px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 auto !important;
 }
 
 .btn-edit:hover {
