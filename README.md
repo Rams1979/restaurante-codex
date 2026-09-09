@@ -62,10 +62,15 @@ npm install
 node db-init.js
 ```
 
-4. **Migrar datos de Excel (opcional)**
-Si tienes archivos `productos.xlsx` y `recetas.xlsx`:
+4. **Migrar datos de archivos anteriores (opcional)**
+Para migrar productos, recetas y clientes desde archivos Excel y texto:
 ```bash
-node migrate-excel-to-sqlite.js
+# Opción 1: Migrar todo de una vez
+node migrate-all.js
+
+# Opción 2: Migrar solo lo que necesites
+node migrate-excel-to-sqlite.js      # Productos + Recetas
+node migrate-clientes-to-sqlite.js   # Clientes
 ```
 
 5. **Iniciar los servidores**
@@ -143,15 +148,16 @@ codex-pos/
 3. Seleccionar el archivo Excel
 4. Los datos se cargan en memoria (usar "🍹 Gestionar Recetas" para guardar en BD)
 
-### Registrar Clientes
+### Registrar Clientes (en Base de Datos)
 1. Hacer clic en "➕ Nuevo Cliente"
 2. Completar formulario con:
-   - Nombre
+   - Nombre (obligatorio, debe ser único)
    - Celular
    - Edad
    - Correo Electrónico
    - Descuento (%) - 0 a 10% (opcional)
 3. Hacer clic en "✅ Registrar"
+4. El cliente se guarda automáticamente en SQLite
 
 ### Editar Clientes
 1. En el Selector de Clientes, hacer clic en el botón ✏️ compacto del cliente
