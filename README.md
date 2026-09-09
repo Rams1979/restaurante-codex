@@ -1,89 +1,87 @@
-# 🍽️ Restaurante Codex - Sistema POS
+# 🍽️ Restaurante Codex - Sistema POS v2.0
 
-Sistema de Punto de Venta (POS) completo para restaurantes, desarrollado con React y Vite.
+**Sistema de Punto de Venta (POS) moderno para restaurantes** con base de datos SQLite, gestión completa de inventario, clientes y facturación.
+
+**Versión**: 2.0.0  
+**Estado**: ✅ Producción - Sistema con base de datos SQLite, sin dependencia de archivos  
+**Última actualización**: 09 de Septiembre de 2026
+
+---
 
 ## 📋 Características Principales
 
-### Sistema de Ventas
-- **15 Mesas**: Gestión independiente de órdenes por mesa
-- **10 Asientos de Barra**: Independientes con gestión de clientes
-- **21 Productos**: Con código, descripción, precio e inventario
-- **Inventario Dinámico**: Actualización automática al agregar/remover productos
-- **Promociones**: Sistema de promos con precios especiales
+### 💼 Sistema de Ventas
+- **15 Mesas Independientes**: Gestión de órdenes por mesa con estado de ocupación
+- **10 Asientos de Barra**: Independientes con gestión de clientes registrados
+- **21 Productos en BD**: Catálogo completo con código, descripción, precio e inventario
+- **Inventario Dinámico**: Actualización en tiempo real al agregar/remover productos
+- **Promociones**: Sistema integrado de promos con precios especiales por cantidad
 
-### Gestión de Clientes
-- **Registro de Clientes**: Nombre, celular, edad, correo
+### 👥 Gestión de Clientes (SQLite)
+- **Registro Completo**: Nombre, celular, edad, correo (persisten en BD)
 - **Sistema de Descuentos**: Descuentos personalizados por cliente (0-10%)
-- **Edición de Clientes**: Modificar datos (excepto nombre) con botón ✏️
-- **Selector de Clientes**: Accesible en mesas y barra con descuentos visibles
-- **Búsqueda**: Filtra clientes por nombre o celular
-- **Cliente de Contado**: Opción por defecto para ventas rápidas
-- **Persistencia**: Datos guardados en archivo (clientes.txt)
+- **Edición de Clientes**: Modificar datos con botón ✏️ (excepto nombre)
+- **Selector de Clientes**: Búsqueda por nombre o celular en tiempo real
+- **Cliente de Contado**: Opción para ventas sin registro
+- **6 Clientes Migrados**: Test, Rolando Mata, Carlos Mendoza, María García, Evelyn, 1
 
-### Facturación
+### 📊 Facturación Inteligente
 - **Impuesto de Ventas**: 13% calculado automáticamente
-- **Servicio**: 10% solo para mesas (no incluido en barra)
-- **Descuentos Automáticos**: Aplicados según descuento del cliente
-- **Información del Cliente**: Mostrada en la factura impresa con descuento
-- **Ticket de Venta**: Con fecha, hora, detalles de la orden y descuentos
-- **Impresión**: Compatible con impresoras térmicas
+- **Servicio**: 10% (solo mesas, no incluido en barra)
+- **Descuentos Automáticos**: Aplicados según perfil del cliente
+- **Ticket de Venta**: Formato térmico con fecha, hora, detalles
 - **Moneda**: Colones Costarricenses (₡)
 
-### Interfaz de Usuario
-- **Responsive**: Funciona en diferentes tamaños de pantalla
-- **Búsqueda**: De productos por código o descripción
+### 🎨 Interfaz de Usuario
+- **Responsive**: Funciona en desktop, tablet y móvil
+- **Búsqueda Rápida**: Filtros por código o descripción de producto
+- **Encabezado Dinámico**: Muestra mesa/barra y cliente actual
 - **Gestión Visual**: Indicadores de stock y ocupación
-- **Encabezado Dinámico**: Muestra nombre de mesa/barra y cliente seleccionado
-- **Cliente en Pantalla**: Identificación clara del cliente durante la orden
-- **Modo Impresión**: Estilos optimizados para tickets
-- **Botones Compactos**: Botones de edición (✏️) rediseñados y optimizados para mejor UX
+- **Botones Optimizados**: Edición (✏️) y eliminación (🗑️) compactos
 - **Diseño Intuitivo**: Interfaz limpia y fácil de usar
 
-## 🚀 Instalación
+### 🗄️ Base de Datos SQLite
+- **5 Tablas**: productos, recetas, clientes, órdenes, órdenes_items
+- **Índices**: Búsquedas rápidas por nombre, celular, mesa y fecha
+- **WAL Mode**: Mejor concurrencia y rendimiento
+- **Prepared Statements**: Prevención de SQL injection
 
-### Requisitos Previos
-- Node.js 16+ 
+---
+
+## 🚀 Instalación Rápida
+
+### Requisitos
+- Node.js 16+
 - npm o yarn
 
-### Pasos de Instalación
+### Pasos
 
-1. **Clonar o descargar el proyecto**
 ```bash
+# 1. Descargar el proyecto
 cd codex-pos
-```
 
-2. **Instalar dependencias**
-```bash
+# 2. Instalar dependencias
 npm install
-```
 
-3. **Inicializar la base de datos SQLite**
-```bash
+# 3. Crear base de datos
 node db-init.js
-```
 
-4. **Migrar datos de archivos anteriores (opcional)**
-Para migrar productos, recetas y clientes desde archivos Excel y texto:
-```bash
-# Opción 1: Migrar todo de una vez
+# 4. Migrar datos (si tienes archivos antigios)
 node migrate-all.js
 
-# Opción 2: Migrar solo lo que necesites
-node migrate-excel-to-sqlite.js      # Productos + Recetas
-node migrate-clientes-to-sqlite.js   # Clientes
-```
-
-5. **Iniciar los servidores**
-```bash
+# 5. Iniciar
 npm run dev
 ```
 
-O usar el script PowerShell:
+O con PowerShell:
 ```powershell
 .\start.ps1
 ```
 
-**Nota**: El servidor API (puerto 3002) ahora usa SQLite en lugar de archivos.
+**El servidor está en**: http://localhost:3000  
+**API en**: http://localhost:3002
+
+---
 
 ## 📁 Estructura del Proyecto
 
@@ -91,447 +89,435 @@ O usar el script PowerShell:
 codex-pos/
 ├── src/
 │   ├── components/
-│   │   ├── Cart.jsx                 # Carrito de compras
-│   │   ├── ClientRegistration.jsx   # Formulario de registro
-│   │   ├── ClientSelector.jsx       # Selector de clientes
-│   │   ├── FileUpload.jsx          # Carga de archivos Excel
-│   │   ├── ProductList.jsx         # Lista de productos
-│   │   ├── RecipeModal.jsx         # Modal de recetas
-│   │   └── TableSelector.jsx       # Selector de mesas/barra
-│   ├── App.jsx                     # Componente principal
-│   ├── App.css                     # Estilos globales
-│   └── main.jsx                    # Punto de entrada
-├── api-server.js                   # Servidor API Node.js
-├── vite.config.js                  # Configuración Vite
-├── package.json                    # Dependencias del proyecto
-├── clientes.txt                    # Base de datos de clientes
-└── README.md                       # Este archivo
+│   │   ├── Cart.jsx                    # Carrito con cálculos
+│   │   ├── ClientRegistration.jsx      # Registro de clientes
+│   │   ├── ClientSelector.jsx          # Selector con búsqueda
+│   │   ├── FileUpload.jsx              # Carga Excel (opcional)
+│   │   ├── ProductList.jsx             # Grid de productos
+│   │   ├── ProductsManager.jsx         # CRUD de productos ⭐
+│   │   ├── RecipesManager.jsx          # CRUD de recetas ⭐
+│   │   ├── RecipeModal.jsx             # Modal de recetas
+│   │   └── TableSelector.jsx           # Grid de mesas/barra
+│   ├── App.jsx                         # Componente principal
+│   ├── App.css                         # Estilos globales
+│   └── main.jsx                        # Punto de entrada
+├── api-server.js                       # API REST Node.js ⭐
+├── db-init.js                          # Creación de BD
+├── migrate-all.js                      # Migración completa ⭐
+├── migrate-excel-to-sqlite.js         # Migración productos/recetas
+├── migrate-clientes-to-sqlite.js      # Migración clientes
+├── vite.config.js                      # Config Vite
+├── codex.db                            # Base de datos SQLite
+├── package.json                        # Dependencias
+└── README.md                           # Este archivo
+
+⭐ = Nuevo en v2.0
 ```
+
+---
 
 ## 💻 Uso del Sistema
 
-### Gestionar Productos (en Base de Datos)
-1. Hacer clic en "📦 Gestionar Productos"
-2. Opciones disponibles:
-   - **Agregar**: Rellenar formulario y hacer clic "➕ Agregar Producto"
-   - **Editar**: Hacer clic en ✏️ del producto a modificar
-   - **Eliminar**: Hacer clic en 🗑️ del producto
-3. Los cambios se guardan inmediatamente en SQLite
+### 1️⃣ Pantalla Principal
+Al abrir la app, ves:
+- Botones de gestión (📦 Productos, 🍹 Recetas, 📁 Cargar Excel)
+- Botón ➕ Nuevo Cliente
+- Grid de 15 mesas + 10 asientos de barra
+- Órdenes activas por mesa
 
-### Cargar Productos desde Excel (Alternativa)
-1. Preparar archivo Excel con columnas:
-   - `codigo`: ID único del producto
-   - `descripcion`: Nombre del producto
-   - `precio`: Precio unitario
-   - `inventario`: Stock disponible
-   - `receta`: Código de receta (opcional, para cócteles)
-   - `peso`: Peso del producto (opcional)
-   - `promoNombre`: Nombre de la promoción (opcional)
-   - `promoCantidad`: Cantidad en la promo (opcional)
-   - `promoPrecio`: Precio de la promo (opcional)
-
-2. Hacer clic en "📁 Cargar Productos"
-3. Seleccionar el archivo Excel
-4. Los datos se cargan en memoria (usar "📦 Gestionar Productos" para guardar en BD)
-
-### Gestionar Recetas (en Base de Datos)
-1. Hacer clic en "🍹 Gestionar Recetas"
-2. Opciones disponibles:
-   - **Agregar**: Rellenar formulario (código, nombre, ingredientes, instrucciones, tiempo)
-   - **Editar**: Hacer clic en ✏️ de la receta a modificar
-   - **Eliminar**: Hacer clic en 🗑️ de la receta
-3. Los cambios se guardan inmediatamente en SQLite
-
-### Cargar Recetas desde Excel (Alternativa)
-1. Preparar archivo Excel con columnas (código, nombre, ingredientes, instrucciones, tiempo)
-2. Hacer clic en "📖 Cargar Recetas"
-3. Seleccionar el archivo Excel
-4. Los datos se cargan en memoria (usar "🍹 Gestionar Recetas" para guardar en BD)
-
-### Registrar Clientes (en Base de Datos)
-1. Hacer clic en "➕ Nuevo Cliente"
-2. Completar formulario con:
-   - Nombre (obligatorio, debe ser único)
-   - Celular
-   - Edad
-   - Correo Electrónico
-   - Descuento (%) - 0 a 10% (opcional)
-3. Hacer clic en "✅ Registrar"
-4. El cliente se guarda automáticamente en SQLite
-
-### Editar Clientes
-1. En el Selector de Clientes, hacer clic en el botón ✏️ compacto del cliente
-2. Modificar datos permitidos:
-   - Celular ✅
-   - Edad ✅
-   - Correo Electrónico ✅
-   - Descuento (0-10%) ✅
-3. El Nombre NO se puede modificar
-4. Hacer clic en "💾 Guardar" para confirmar cambios
-
-**Nota**: Los botones de edición han sido optimizados para mejor usabilidad - son compactos (36x36px) y proporcionados visualmente.
-
-### Crear Orden
-1. Seleccionar Mesa o Asiento de Barra
-2. Elegir cliente de la lista o usar "Cliente de Contado"
-3. Buscar y agregar productos
-4. Ajustar cantidades si es necesario
-5. Hacer clic en "🖨️ Imprimir" para generar ticket
-
-### Pantalla de Productos
-La pantalla de productos muestra:
-
+### 2️⃣ Gestionar Productos (Base de Datos)
 ```
-← Mesas    Mesa 5
-           👤 Rolando Mata
+Hacer clic en "📦 Gestionar Productos":
+├── Agregar: Formulario → ➕ Agregar Producto
+├── Editar: Clic en ✏️ → Modificar → 💾 Guardar
+└── Eliminar: Clic en 🗑️ → Confirmar
+```
+Los cambios se guardan inmediatamente en SQLite.
 
-Buscar por código o descripción...
+### 3️⃣ Gestionar Recetas (Base de Datos)
+```
+Hacer clic en "🍹 Gestionar Recetas":
+├── Agregar: Código, nombre, ingredientes, instrucciones
+├── Editar: Clic en ✏️ → Modificar → 💾 Guardar
+└── Eliminar: Clic en 🗑️ → Confirmar
+```
+Soporta cócteles y bebidas especiales.
 
-[Productos en grid]
+### 4️⃣ Registrar Clientes
+```
+Clic en "➕ Nuevo Cliente":
+├── Nombre (obligatorio, único)
+├── Celular
+├── Edad
+├── Correo
+└── Descuento 0-10% (opcional)
+```
+Se guardan automáticamente en SQLite.
+
+### 5️⃣ Crear Orden
+```
+Clic en mesa o asiento de barra:
+├── Seleccionar cliente (o "Cliente de Contado")
+├── Buscar producto por código/descripción
+├── Agregar a carrito
+├── Ajustar cantidades
+└── 🖨️ Imprimir ticket
 ```
 
-**Encabezado dinámico:**
-- Nombre de la mesa/barra (Mesa 1, Barra 5, etc.)
-- Nombre del cliente seleccionado con ícono 👤
-- "Cliente de Contado" si no hay cliente registrado
-- Actualización automática cuando se cambia de cliente
+### 6️⃣ Cargar desde Excel (Opcional)
+```
+Si tienes archivos antiguos:
+├── Clic en "📁 Cargar Productos"
+├── Seleccionar archivo Excel
+└── Clic en "📦 Gestionar Productos" para guardar en BD
+```
 
-**Búsqueda de productos:**
-- Filtra por código (número del producto)
-- Filtra por descripción (nombre del producto)
-- Búsqueda en tiempo real mientras escribe
+---
 
-## 📊 Cálculos
+## 📊 Ejemplos de Cálculo
 
-### Ejemplo de Orden (Sin Descuento)
+### Orden Sin Descuento
 ```
 Producto: Coca Cola
 Cantidad: 1
 Precio Unitario: ₡1,300.00
-Subtotal: ₡1,300.00
 
-Impuesto (13%): ₡169.00
-Servicio (10% - solo mesas): ₡130.00
-
-TOTAL: ₡1,599.00
+Subtotal:          ₡1,300.00
+Impuesto (13%):       ₡169.00
+Servicio (10%):       ₡130.00
+────────────────────────────
+TOTAL:             ₡1,599.00
 ```
 
-### Ejemplo de Orden (Con Descuento 4%)
+### Orden Con Descuento (Cliente: Rolando Mata, 4%)
 ```
-Cliente: Rolando Mata (Descuento: 4%)
 Producto: Coca Cola
 Cantidad: 1
 Precio Unitario: ₡1,300.00
-Subtotal: ₡1,300.00
 
-Descuento (4%): -₡52.00
-Subtotal c/ Descuento: ₡1,248.00
-
-Impuesto (13%): ₡162.24
-Servicio (10% - solo mesas): ₡124.80
-
-TOTAL: ₡1,535.04
+Subtotal:          ₡1,300.00
+Descuento (4%):      -₡52.00
+────────────────────────────
+Subtotal c/ Desc:  ₡1,248.00
+Impuesto (13%):      ₡162.24
+Servicio (10%):      ₡124.80
+────────────────────────────
+TOTAL:             ₡1,535.04
 ```
 
-### Orden de Cálculos
-1. **Subtotal**: Suma de (precio unitario × cantidad) de todos los productos
-2. **Descuento**: Subtotal × (descuento_cliente / 100)
-3. **Subtotal c/ Descuento**: Subtotal - Descuento
-4. **Impuesto**: Subtotal c/ Descuento × 0.13
-5. **Servicio**: Subtotal c/ Descuento × 0.10 (solo mesas)
-6. **Total**: Subtotal c/ Descuento + Impuesto + Servicio
+### Orden en Barra (Sin Servicio)
+```
+Producto: Mojito
+Cantidad: 2
+Precio Unitario: ₡3,500.00
 
-### Impuesto
-- **Tasa**: 13% del subtotal (después de descuento)
-- **Se aplica**: Siempre (mesas y barra)
-
-### Servicio
-- **Tasa**: 10% del subtotal (después de descuento)
-- **Se aplica**: Solo en mesas
-- **No se aplica**: En barra
-
-### Descuento
-- **Rango**: 0% a 10% por cliente
-- **Se aplica**: Antes de impuesto y servicio
-- **Es configurable**: Por cliente en registro/edición
-- **Es visible**: En selector de clientes y ticket impreso
-
-## 🗄️ Base de Datos (SQLite)
-
-El sistema utiliza **SQLite** como base de datos principal, eliminando la dependencia de archivos de texto.
-
-### Inicialización
-```bash
-node db-init.js
+Subtotal:          ₡7,000.00
+Impuesto (13%):      ₡910.00
+Servicio:               ₡0.00
+────────────────────────────
+TOTAL:             ₡7,910.00
 ```
 
-### Tablas Principales
-- **productos**: Catálogo de productos con inventario
-- **recetas**: Recetas de cócteles y bebidas especiales
-- **clientes**: Información de clientes con descuentos
-- **ordenes**: Historial de órdenes/transacciones
-- **ordenes_items**: Detalles de artículos en cada orden
+---
 
-### Campos de Clientes
-- `id`: ID único del cliente (autoincrement)
-- `nombre`: Nombre completo del cliente (UNIQUE)
-- `celular`: Número de celular
-- `edad`: Edad del cliente
-- `correo`: Correo electrónico
-- `descuento`: Descuento en porcentaje (0-10)
-- `fecha`: Fecha de registro en ISO 8601
+## 🗄️ Base de Datos SQLite
 
-Ver [SQLITE_MIGRATION.md](SQLITE_MIGRATION.md) para detalles completos del esquema.
+### Tablas
 
-## 🔌 API Server
+#### `productos`
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `codigo` | TEXT PK | ID único del producto |
+| `descripcion` | TEXT | Nombre del producto |
+| `precio` | REAL | Precio unitario en ₡ |
+| `inventario` | INT | Stock disponible |
+| `receta` | TEXT | Código de receta (cócteles) |
+| `peso` | TEXT | Peso o volumen |
+| `promoNombre` | TEXT | Nombre de la promoción |
+| `promoCantidad` | INT | Cantidad en promo |
+| `promoPrecio` | REAL | Precio de promo |
 
-### Puerto
+#### `recetas`
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `codigo` | TEXT PK | ID único de receta |
+| `nombre` | TEXT | Nombre del cóctel |
+| `ingredientes` | TEXT | Lista de ingredientes |
+| `instrucciones` | TEXT | Pasos de preparación |
+| `tiempo` | TEXT | Tiempo de preparación |
+
+#### `clientes`
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | INT PK | ID único |
+| `nombre` | TEXT UNIQUE | Nombre completo |
+| `celular` | TEXT | Número de contacto |
+| `edad` | TEXT | Edad del cliente |
+| `correo` | TEXT | Email |
+| `descuento` | INT | % descuento (0-10) |
+| `fecha` | DATETIME | Fecha de registro |
+
+#### `órdenes`
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | INT PK | ID de orden |
+| `numeroMesa` | TEXT | Mesa o asiento |
+| `cliente_id` | INT FK | Referencia a cliente |
+| `subtotal` | REAL | Antes de impuesto |
+| `descuento` | REAL | Monto de descuento |
+| `impuesto` | REAL | Impuesto (13%) |
+| `servicio` | REAL | Servicio (10% mesas) |
+| `total` | REAL | Total final |
+| `estado` | TEXT | pendiente/cobrado |
+| `createdAt` | DATETIME | Fecha/hora |
+
+#### `órdenes_items`
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | INT PK | ID del item |
+| `orden_id` | INT FK | Orden asociada |
+| `codigo` | TEXT | Producto |
+| `descripcion` | TEXT | Nombre producto |
+| `cantidad` | INT | Cantidad |
+| `precio` | REAL | Precio unitario |
+| `isPromo` | INT | Es promoción? |
+
+---
+
+## 🔌 API REST
+
+### Servidor
+- **Dirección**: http://localhost:3002
 - **Puerto**: 3002
-- **Proxy en Vite**: /api → http://localhost:3002
+- **CORS**: Habilitado para localhost
 
 ### Endpoints
 
-#### GET /api/clients
-Obtiene la lista de clientes registrados.
-
-**Respuesta:**
-```json
-[
-  {
-    "id": 1234567890,
-    "nombre": "Juan García",
-    "celular": "50377778888",
-    "edad": "35",
-    "correo": "juan@email.com",
-    "fecha": "2026-09-08T15:30:45.123Z"
-  }
-]
+#### Productos
+```
+GET    /api/products              # Obtener todos
+POST   /api/products              # Crear producto
+PUT    /api/products/:codigo      # Actualizar
+DELETE /api/products/:codigo      # Eliminar
 ```
 
-#### POST /api/clients
-Registra un nuevo cliente.
-
-**Body:**
-```json
-{
-  "nombre": "María López",
-  "celular": "50377779999",
-  "edad": "28",
-  "correo": "maria@email.com",
-  "descuento": 0
-}
+#### Recetas
+```
+GET    /api/recipes               # Obtener todas
+POST   /api/recipes               # Crear receta
+PUT    /api/recipes/:codigo       # Actualizar
+DELETE /api/recipes/:codigo       # Eliminar
 ```
 
-**Respuesta:**
-```json
-{
-  "id": 1234567891,
-  "nombre": "María López",
-  "celular": "50377779999",
-  "edad": "28",
-  "correo": "maria@email.com",
-  "descuento": 0,
-  "fecha": "2026-09-08T16:45:30.456Z"
-}
+#### Clientes
+```
+GET    /api/clients               # Obtener todos
+POST   /api/clients               # Crear cliente
+PUT    /api/clients/:id           # Actualizar
 ```
 
-#### PUT /api/clients/:id
-Actualiza los datos de un cliente existente.
-
-**Body:**
-```json
-{
-  "celular": "50377779999",
-  "edad": "29",
-  "correo": "maria.nueva@email.com",
-  "descuento": 5
-}
+### Ejemplo: Agregar Producto
+```bash
+curl -X POST http://localhost:3002/api/products \
+  -H "Content-Type: application/json" \
+  -d '{
+    "codigo": "COCA001",
+    "descripcion": "Coca Cola",
+    "precio": 1300,
+    "inventario": 50
+  }'
 ```
 
-**Respuesta:**
-```json
-{
-  "id": 1234567891,
-  "nombre": "María López",
-  "celular": "50377779999",
-  "edad": "29",
-  "correo": "maria.nueva@email.com",
-  "descuento": 5,
-  "fecha": "2026-09-08T16:45:30.456Z"
-}
+---
+
+## 🔄 Migración de Datos
+
+### Script Unificado (Recomendado)
+```bash
+node migrate-all.js
+```
+Migra automáticamente:
+- ✅ 21 productos desde `productos.xlsx`
+- ✅ 5 recetas desde `recetas.xlsx`
+- ✅ 6 clientes desde `clientes.txt`
+
+### Scripts Individuales
+```bash
+node migrate-excel-to-sqlite.js      # Solo productos + recetas
+node migrate-clientes-to-sqlite.js   # Solo clientes
 ```
 
-**Notas:**
-- El nombre NO puede ser modificado
-- Validación: descuento debe estar entre 0 y 10
-- Responde 404 si el cliente no existe
-
-## 🎨 Interfaz de Usuario
-
-### Pantalla Principal
-- Botones: Cargar Productos, Cargar Recetas, Nuevo Cliente
-- Grid de Mesas: 15 mesas en 4 filas
-- Grid de Barra: 10 asientos en 1 fila
-
-### Pantalla de Orden
-- Búsqueda de productos
-- Grid de productos con:
-  - Código
-  - Descripción
-  - Precio
-  - Stock disponible
-  - Botón Agregar
-  - Ícono de receta (si aplica)
-  - Sección de promociones
-
-### Carrito
-- Información de la orden (mesa/barra y cliente)
-- Lista de items con:
-  - Producto
-  - Cantidad
-  - Precio unitario
-  - Precio total
-  - Botón para remover
-- Resumen:
-  - Subtotal
-  - Impuesto (13%)
-  - Servicio (10% - si aplica)
-  - Total
-- Botones: Imprimir, Cobrar
-
-## 🖨️ Ticket Impreso
-
-El ticket incluye:
+### Resultado Esperado
 ```
-═════════════════════════
-   🍽️ Restaurante Codex
-       Ticket de Venta
-═════════════════════════
+🔄 Iniciando migración de datos a SQLite...
 
-Mesa: 5
-Cliente: Rolando Mata
-Celular: 89121826
-Correo: rolandomata@hotmail.com
+📦 Migrando productos...
+  ✅ 21 productos
 
-Fecha: 08/09/2026
-Hora: 16:45:30
+🍹 Migrando recetas...
+  ✅ 5 recetas
 
-─────────────────────────
-Código  Descripción  Cant   Total
-1       Coca Cola    1      ₡1,300.00
-─────────────────────────
+👤 Migrando clientes...
+  ✅ 6 clientes
 
-Subtotal:          ₡1,300.00
-Impuesto (13%):      ₡169.00
-Servicio (10%):      ₡130.00
-═════════════════════════
-TOTAL:             ₡1,599.00
-═════════════════════════
+═══════════════════════════════════
+✅ Migración completada!
+═══════════════════════════════════
 ```
+
+---
 
 ## ⚙️ Configuración
 
-### vite.config.js
+### Vite (vite.config.js)
 ```javascript
 server: {
-  port: 3000,
-  open: true,
+  port: 3000,                    // Puerto frontend
+  open: true,                    // Abrir navegador
   proxy: {
     '/api': {
       target: 'http://localhost:3002',
-      changeOrigin: true,
-      rewrite: (path) => path.replace(/^\/api/, '/api')
+      changeOrigin: true
     }
   }
 }
 ```
 
-## 🔐 Seguridad
-
-- Los datos de clientes se guardan localmente en el servidor
-- Las transacciones se procesan localmente
-- No hay transmisión a servidores externos
-- Los datos de inventario se resetean al reiniciar
-
-## 📱 Dispositivos Soportados
-
-- Desktop (principal)
-- Tablet
-- Mobile (interfaz responsive)
-
-## ✅ Validación de Funcionalidades
-
-### Cliente Registration (Validado)
-- ✅ Modal de registro abre sin errores
-- ✅ Todos los campos aceptan entrada correctamente
-- ✅ POST request a `/api/clients` completa exitosamente
-- ✅ Datos del cliente persisten en clientes.txt
-- ✅ Timestamp se registra correctamente
-- ✅ Sin errores en consola del navegador
-
-### Cliente Selector (Listo)
-- ✅ Selector de clientes aparece al seleccionar mesa/barra
-- ✅ Búsqueda funciona por nombre y celular
-- ✅ Opción "Cliente de Contado" disponible
-- ✅ Nombre del cliente se muestra en encabezado de orden
-
-### Formato de Moneda (Validado)
-- ✅ Símbolo ₡ (Colón Costarricense) en todos los montos
-- ✅ Precios de productos muestran ₡
-- ✅ Promociones muestran ₡
-- ✅ Carrito y resumen muestran ₡
-- ✅ Ticket impreso usa ₡
-
-### Sistema de Descuentos (Validado)
-- ✅ Campo descuento en registro de clientes (0-10%)
-- ✅ Edición de clientes con botón ✏️
-- ✅ Descuentos visibles en selector de clientes
-- ✅ Aplicación correcta de descuentos en carrito
-- ✅ Cálculos de impuesto/servicio sobre subtotal con descuento
-- ✅ Descuentos mostrados en línea verde en resumen
-- ✅ Descuentos persistidos en clientes.txt
-- ✅ API endpoints PUT funcionales
-- ✅ Descuentos mostrados en ticket impreso
-- ✅ Validación: rango 0-10% en servidor
-
-## 🐛 Solución de Problemas
-
-### "API Server no disponible"
-1. Verificar que el proceso Node.js está corriendo
-2. Revisar que el puerto 3002 está libre
-3. Reiniciar el servidor: `npm run dev`
-
-### "No se cargan los productos"
-1. Verificar que el archivo Excel tiene el formato correcto
-2. Revisar que las columnas tienen nombres exactos
-3. Intentar con el archivo de ejemplo
-
-### "El cliente no se guarda"
-1. Verificar conexión al API Server
-2. Revisar que todos los campos están completos
-3. Revisar los logs del servidor en la consola
-
-## 📝 Notas de Desarrollo
-
-- **Estado Global**: Se usa React hooks (useState)
-- **Estilos**: CSS puro (sin frameworks de CSS)
-- **Persistencia**: Archivos de texto con formato JSON
-- **Formato de Impresión**: CSS @media print
-- **Inventario**: Se rastrea en `inventoryUsed` state
-- **Cliente en Encabezado**: Se renderiza dinámicamente desde `selectedClient` state
-- **Selector de Clientes**: Modal con búsqueda en tiempo real
-- **API Server**: Node.js HTTP server en puerto 3002 con CORS habilitado
-
-## 🤝 Contribuciones
-
-Para reportar bugs o sugerir mejoras, contactar con el equipo de desarrollo.
-
-## 📄 Licencia
-
-Proyecto desarrollado para Restaurante Codex.
+### Base de Datos (api-server.js)
+```javascript
+db.pragma('journal_mode = WAL')  // Write-Ahead Logging
+                                 // Mejor concurrencia
+```
 
 ---
 
-**Última actualización**: 09 de Septiembre de 2026 - Implementación de SQLite
-**Versión**: 2.0.0
-**Estado**: ✅ Producción - Sistema con base de datos SQLite, sin archivos Excel
+## 🛡️ Seguridad
+
+✅ **Prepared Statements**: Prevención de SQL injection  
+✅ **Validación Servidor**: Todos los datos validados  
+✅ **CORS Habilitado**: Solo localhost  
+✅ **Descuentos Validados**: Rango 0-10% forzado  
+✅ **Nombres Únicos**: No se permiten clientes duplicados  
+
+---
+
+## 📱 Dispositivos Soportados
+
+| Dispositivo | Estado |
+|------------|--------|
+| 🖥️ Desktop | ✅ Óptimo |
+| 📱 Tablet | ✅ Responsive |
+| 📱 Móvil | ✅ Compatible |
+
+---
+
+## 🐛 Solución de Problemas
+
+### "API no disponible"
+```bash
+# Verificar puerto 3002
+netstat -ano | findstr :3002
+
+# Reiniciar servidor
+npm run dev
+```
+
+### "No se cargan productos"
+```bash
+# Verificar BD existe
+ls -la codex.db
+
+# Reinicializar
+node db-init.js
+node migrate-all.js
+```
+
+### "Cliente no se guarda"
+```bash
+# Ver logs
+node api-server.js
+
+# Verificar conexión BD
+sqlite3 codex.db ".tables"
+```
+
+### "Error de CORS"
+```bash
+# Ya está configurado, pero si falla:
+# Verificar que API está en http://localhost:3002
+# Verificar proxy en vite.config.js
+```
+
+---
+
+## 📝 Logs y Debug
+
+### Ver requests HTTP
+```javascript
+// api-server.js tiene logs de cada endpoint
+console.log('POST /api/clients - Datos recibidos:', body)
+console.log('Cliente guardado exitosamente:', newClient.id)
+```
+
+### Ver estado de BD
+```bash
+sqlite3 codex.db
+
+# Ver tablas
+.tables
+
+# Contar registros
+SELECT COUNT(*) FROM productos;
+SELECT COUNT(*) FROM clientes;
+SELECT COUNT(*) FROM recetas;
+
+# Ver clientes
+SELECT nombre, descuento FROM clientes;
+```
+
+---
+
+## 🚀 Próximas Mejoras Sugeridas
+
+- [ ] Historial de órdenes con gráficos
+- [ ] Reportes diarios/mensuales
+- [ ] Gestión de usuarios con permisos
+- [ ] Backup automático de BD
+- [ ] Integración con impresora térmica
+- [ ] App móvil nativa
+- [ ] Sincronización multi-sucursal
+- [ ] Integración pagos online
+
+---
+
+## 📞 Soporte
+
+Para reportar bugs o sugerir mejoras:
+- Contactar equipo de desarrollo
+- Revisar logs en consola del navegador
+- Consultar base de datos SQLite
+
+---
+
+## 📄 Licencia
+
+Proyecto desarrollado para **Restaurante Codex**.
+
+---
+
+## 📋 Changelog
+
+### v2.0.0 (09 Septiembre 2026)
+✅ Migración completa a SQLite  
+✅ Gestores CRUD para productos y recetas  
+✅ Carga automática de productos al iniciar  
+✅ Migración de 21 productos, 5 recetas, 6 clientes  
+✅ Documentación completa  
+
+### v1.1.1
+- Sistema basado en archivos de texto
+- Carga de Excel manual
+
+---
+
+**Desarrollado con ❤️ para Restaurante Codex**
