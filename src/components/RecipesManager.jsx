@@ -162,11 +162,11 @@ function RecipesManager({ onClose }) {
               </thead>
               <tbody>
                 {recipes.map((recipe) => (
-                  <tr key={recipe.codigo} style={{ borderBottom: '1px solid #ddd', backgroundColor: '#f9f9f9' }}>
-                    <td style={{ padding: '0.8rem', fontSize: '0.9rem' }}>{recipe.codigo}</td>
-                    <td style={{ padding: '0.8rem', fontSize: '0.9rem' }}>{recipe.nombre}</td>
-                    <td style={{ padding: '0.8rem', fontSize: '0.9rem' }}>{recipe.tiempo || '-'}</td>
-                    <td style={{ padding: '0.8rem', textAlign: 'center' }}>
+                  <tr key={recipe.codigo} style={{ borderBottom: '1px solid #ddd', backgroundColor: '#f9f9f9', height: '50px', verticalAlign: 'middle' }}>
+                    <td style={{ padding: '0.8rem', fontSize: '0.9rem', verticalAlign: 'middle' }}>{recipe.codigo}</td>
+                    <td style={{ padding: '0.8rem', fontSize: '0.9rem', verticalAlign: 'middle' }}>{recipe.nombre}</td>
+                    <td style={{ padding: '0.8rem', fontSize: '0.9rem', verticalAlign: 'middle' }}>{recipe.tiempo || '-'}</td>
+                    <td style={{ padding: '0.8rem', textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                       <button
                         onClick={() => handleEdit(recipe)}
                         className="btn-edit"

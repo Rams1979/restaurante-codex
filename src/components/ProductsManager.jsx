@@ -171,12 +171,12 @@ function ProductsManager({ onClose }) {
               </thead>
               <tbody>
                 {products.map((product) => (
-                  <tr key={product.codigo} style={{ borderBottom: '1px solid #ddd', backgroundColor: '#f9f9f9' }}>
-                    <td style={{ padding: '0.8rem', fontSize: '0.9rem' }}>{product.codigo}</td>
-                    <td style={{ padding: '0.8rem', fontSize: '0.9rem' }}>{product.descripcion}</td>
-                    <td style={{ padding: '0.8rem', textAlign: 'right', fontSize: '0.9rem' }}>₡{product.precio.toFixed(2)}</td>
-                    <td style={{ padding: '0.8rem', textAlign: 'right', fontSize: '0.9rem' }}>{product.inventario}</td>
-                    <td style={{ padding: '0.8rem', textAlign: 'center' }}>
+                  <tr key={product.codigo} style={{ borderBottom: '1px solid #ddd', backgroundColor: '#f9f9f9', height: '50px', verticalAlign: 'middle' }}>
+                    <td style={{ padding: '0.8rem', fontSize: '0.9rem', verticalAlign: 'middle' }}>{product.codigo}</td>
+                    <td style={{ padding: '0.8rem', fontSize: '0.9rem', verticalAlign: 'middle' }}>{product.descripcion}</td>
+                    <td style={{ padding: '0.8rem', textAlign: 'right', fontSize: '0.9rem', verticalAlign: 'middle' }}>₡{product.precio.toFixed(2)}</td>
+                    <td style={{ padding: '0.8rem', textAlign: 'right', fontSize: '0.9rem', verticalAlign: 'middle' }}>{product.inventario}</td>
+                    <td style={{ padding: '0.8rem', textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                       <button
                         onClick={() => handleEdit(product)}
                         className="btn-edit"
