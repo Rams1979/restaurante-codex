@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import FileUpload from './components/FileUpload'
 import TableSelector from './components/TableSelector'
 import ProductList from './components/ProductList'
@@ -23,6 +23,21 @@ function App() {
   const [selectedClient, setSelectedClient] = useState({})
   const [showProductsManager, setShowProductsManager] = useState(false)
   const [showRecipesManager, setShowRecipesManager] = useState(false)
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const response = await fetch('/api/products')
+        if (response.ok) {
+          const data = await response.json()
+          setProducts(data)
+        }
+      } catch (err) {
+        console.error('Error loading products:', err)
+      }
+    }
+    loadProducts()
+  }, [])
 
   const handleFileUpload = (uploadedProducts) => {
     setProducts(uploadedProducts)
@@ -224,19 +239,12 @@ function App() {
                 ➕ Nuevo Cliente
               </button>
             </div>
-            {products.length > 0 && (
-              <TableSelector
-                onSelectTable={handleSelectTable}
-                orders={orders}
-                onClearTable={clearTable}
-                onShowClientRegistration={() => setShowClientRegistration(true)}
-              />
-            )}
-            {products.length === 0 && (
-              <div className="empty-state">
-                <p>Carga un archivo Excel para comenzar</p>
-              </div>
-            )}
+            <TableSelector
+              onSelectTable={handleSelectTable}
+              orders={orders}
+              onClearTable={clearTable}
+              onShowClientRegistration={() => setShowClientRegistration(true)}
+            />
           </>
         ) : (
           <div className="main-content">
