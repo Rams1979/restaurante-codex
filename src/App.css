@@ -203,7 +203,7 @@ body {
 
 .product-code {
   font-weight: 700;
-  color: #667eea;
+  color: #000000;
 }
 
 .recipe-badge {
@@ -241,7 +241,7 @@ body {
 .product-description {
   font-size: 0.95rem;
   margin-bottom: 0.4rem;
-  color: #333;
+  color: #000000;
   flex: 1;
   line-height: 1.2;
 }
@@ -249,7 +249,7 @@ body {
 .product-peso {
   margin: 0.2rem 0 0.4rem 0;
   font-size: 0.8rem;
-  color: #666;
+  color: #000000;
   font-style: italic;
 }
 
@@ -295,7 +295,7 @@ body {
 .product-price {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #667eea;
+  color: #000000;
 }
 
 .add-button {
