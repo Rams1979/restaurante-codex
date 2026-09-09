@@ -36,6 +36,8 @@ Sistema de Punto de Venta (POS) completo para restaurantes, desarrollado con Rea
 - **Encabezado Dinámico**: Muestra nombre de mesa/barra y cliente seleccionado
 - **Cliente en Pantalla**: Identificación clara del cliente durante la orden
 - **Modo Impresión**: Estilos optimizados para tickets
+- **Botones Compactos**: Botones de edición (✏️) rediseñados y optimizados para mejor UX
+- **Diseño Intuitivo**: Interfaz limpia y fácil de usar
 
 ## 🚀 Instalación
 
@@ -116,7 +118,7 @@ codex-pos/
 3. Hacer clic en "✅ Registrar"
 
 ### Editar Clientes
-1. En el Selector de Clientes, hacer clic en ✏️ del cliente
+1. En el Selector de Clientes, hacer clic en el botón ✏️ compacto del cliente
 2. Modificar datos permitidos:
    - Celular ✅
    - Edad ✅
@@ -124,6 +126,8 @@ codex-pos/
    - Descuento (0-10%) ✅
 3. El Nombre NO se puede modificar
 4. Hacer clic en "💾 Guardar" para confirmar cambios
+
+**Nota**: Los botones de edición han sido optimizados para mejor usabilidad - son compactos (36x36px) y proporcionados visualmente.
 
 ### Crear Orden
 1. Seleccionar Mesa o Asiento de Barra
@@ -475,6 +479,6 @@ Proyecto desarrollado para Restaurante Codex.
 
 ---
 
-**Última actualización**: 09 de Septiembre de 2026 - Sistema de descuentos implementado y validado
-**Versión**: 1.1.0
-**Estado**: ✅ Producción - Sistema de descuentos, Edición de clientes, Moneda en ₡
+**Última actualización**: 09 de Septiembre de 2026 - Optimización de UI (Botones de edición rediseñados)
+**Versión**: 1.1.1
+**Estado**: ✅ Producción - Sistema completo y optimizado para mejor UX
