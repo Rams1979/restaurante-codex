@@ -40,11 +40,9 @@ function Cart({ items, tableInfo, locationType, clientInfo, onRemove, onUpdateQu
   }
 
   const handleCloseSale = async () => {
-    if (confirm('¿Cobrar esta orden?')) {
-      await updateInventory()
-      alert(`✅ Orden de ${tableInfo} cobrada por ₡${total.toFixed(2)}`)
-      onClear()
-    }
+    await updateInventory()
+    alert(`✅ Orden de ${tableInfo} cobrada por ₡${total.toFixed(2)}`)
+    onClear()
   }
 
   return (
