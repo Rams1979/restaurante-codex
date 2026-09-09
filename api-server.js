@@ -1,104 +1,86 @@
 import http from 'http'
-import fs from 'fs'
+import Database from 'better-sqlite3'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const CLIENTS_FILE = path.join(__dirname, 'clientes.txt')
+const dbPath = path.join(__dirname, 'codex.db')
 
 console.log('API Server iniciando...')
-console.log('Directorio de trabajo:', __dirname)
-console.log('Archivo de clientes:', CLIENTS_FILE)
+console.log('Base de datos:', dbPath)
 
-function readClients() {
-  try {
-    if (!fs.existsSync(CLIENTS_FILE)) {
-      console.log('Archivo de clientes no existe, creando archivo vacío')
-      fs.writeFileSync(CLIENTS_FILE, '', 'utf-8')
-      return []
-    }
-    const data = fs.readFileSync(CLIENTS_FILE, 'utf-8')
-    if (!data.trim()) return []
-    return data.trim().split('\n').filter(line => line.trim()).map(line => {
-      try {
-        return JSON.parse(line)
-      } catch (e) {
-        console.warn('Línea inválida en clientes.txt:', line)
-        return null
-      }
-    }).filter(c => c !== null)
-  } catch (err) {
-    console.error('Error leyendo clientes:', err.message)
-    return []
-  }
+const db = new Database(dbPath)
+db.pragma('journal_mode = WAL')
+
+function getClients() {
+  const stmt = db.prepare('SELECT * FROM clientes ORDER BY nombre')
+  return stmt.all()
 }
 
-function saveClient(client) {
-  try {
-    if (!client.nombre || !client.celular || !client.edad || !client.correo) {
-      throw new Error('Faltan campos requeridos')
-    }
+function addClient(clientData) {
+  if (!clientData.nombre || !clientData.celular || !clientData.edad || !clientData.correo) {
+    throw new Error('Faltan campos requeridos')
+  }
 
-    let descuento = parseInt(client.descuento) || 0
-    if (descuento < 0 || descuento > 10) {
-      throw new Error('El descuento debe estar entre 0 y 10')
-    }
+  let descuento = parseInt(clientData.descuento) || 0
+  if (descuento < 0 || descuento > 10) {
+    throw new Error('El descuento debe estar entre 0 y 10')
+  }
 
-    const clients = readClients()
-    const newClient = {
-      id: Date.now(),
-      nombre: client.nombre,
-      celular: client.celular,
-      edad: client.edad,
-      correo: client.correo,
-      descuento: descuento,
-      fecha: new Date().toISOString()
-    }
-    clients.push(newClient)
+  const stmt = db.prepare(`
+    INSERT INTO clientes (nombre, celular, edad, correo, descuento)
+    VALUES (?, ?, ?, ?, ?)
+  `)
 
-    const lines = clients.map(c => JSON.stringify(c))
-    fs.writeFileSync(CLIENTS_FILE, lines.join('\n') + '\n', 'utf-8')
+  const result = stmt.run(clientData.nombre, clientData.celular, clientData.edad, clientData.correo, descuento)
 
-    console.log('Cliente guardado:', newClient.id)
-    return newClient
-  } catch (err) {
-    console.error('Error guardando cliente:', err.message)
-    throw err
+  return {
+    id: result.lastInsertRowid,
+    nombre: clientData.nombre,
+    celular: clientData.celular,
+    edad: clientData.edad,
+    correo: clientData.correo,
+    descuento: descuento,
+    fecha: new Date().toISOString()
   }
 }
 
 function updateClient(clientId, updates) {
-  try {
-    const clients = readClients()
-    const clientIndex = clients.findIndex(c => c.id === clientId)
+  const allowedFields = ['celular', 'edad', 'correo', 'descuento']
+  const updateParts = []
+  const values = []
 
-    if (clientIndex === -1) {
-      throw new Error('Cliente no encontrado')
-    }
-
-    const client = clients[clientIndex]
-
-    // Solo actualizar campos permitidos (no el nombre ni el ID)
-    if (updates.celular !== undefined) client.celular = updates.celular
-    if (updates.edad !== undefined) client.edad = updates.edad
-    if (updates.correo !== undefined) client.correo = updates.correo
-    if (updates.descuento !== undefined) {
-      let descuento = parseInt(updates.descuento) || 0
-      if (descuento < 0 || descuento > 10) {
-        throw new Error('El descuento debe estar entre 0 y 10')
+  for (const field of allowedFields) {
+    if (updates[field] !== undefined) {
+      if (field === 'descuento') {
+        let descuento = parseInt(updates[field]) || 0
+        if (descuento < 0 || descuento > 10) {
+          throw new Error('El descuento debe estar entre 0 y 10')
+        }
+        updateParts.push(`${field} = ?`)
+        values.push(descuento)
+      } else {
+        updateParts.push(`${field} = ?`)
+        values.push(updates[field])
       }
-      client.descuento = descuento
     }
-
-    const lines = clients.map(c => JSON.stringify(c))
-    fs.writeFileSync(CLIENTS_FILE, lines.join('\n') + '\n', 'utf-8')
-
-    console.log('Cliente actualizado:', clientId)
-    return client
-  } catch (err) {
-    console.error('Error actualizando cliente:', err.message)
-    throw err
   }
+
+  if (updateParts.length === 0) {
+    throw new Error('No hay campos para actualizar')
+  }
+
+  values.push(clientId)
+  const query = `UPDATE clientes SET ${updateParts.join(', ')} WHERE id = ?`
+  const stmt = db.prepare(query)
+  const result = stmt.run(...values)
+
+  if (result.changes === 0) {
+    throw new Error('Cliente no encontrado')
+  }
+
+  const client = db.prepare('SELECT * FROM clientes WHERE id = ?').get(clientId)
+  return client
 }
 
 const server = http.createServer((req, res) => {
@@ -113,9 +95,10 @@ const server = http.createServer((req, res) => {
     return
   }
 
+  // GET /api/clients
   if (req.url === '/api/clients' && req.method === 'GET') {
     try {
-      const clients = readClients()
+      const clients = getClients()
       res.writeHead(200)
       res.end(JSON.stringify(clients))
     } catch (err) {
@@ -126,6 +109,7 @@ const server = http.createServer((req, res) => {
     return
   }
 
+  // POST /api/clients
   if (req.url === '/api/clients' && req.method === 'POST') {
     let body = ''
     req.on('data', chunk => {
@@ -141,7 +125,7 @@ const server = http.createServer((req, res) => {
         }
         const clientData = JSON.parse(body)
         console.log('Datos parseados:', clientData)
-        const newClient = saveClient(clientData)
+        const newClient = addClient(clientData)
         console.log('Cliente guardado exitosamente:', newClient.id)
         res.writeHead(201)
         res.end(JSON.stringify(newClient))
@@ -159,6 +143,7 @@ const server = http.createServer((req, res) => {
     return
   }
 
+  // PUT /api/clients/:id
   const putMatch = req.url.match(/^\/api\/clients\/(\d+)$/)
   if (putMatch && req.method === 'PUT') {
     const clientId = parseInt(putMatch[1])
