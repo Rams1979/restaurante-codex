@@ -155,30 +155,55 @@ function ProductsManager({ onClose }) {
 
         {loading ? (
           <p>Cargando productos...</p>
+        ) : products.length === 0 ? (
+          <p style={{ textAlign: 'center', color: '#999', padding: '2rem' }}>No hay productos registrados</p>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
+          <div style={{ overflowX: 'auto', maxHeight: '400px', overflowY: 'auto', border: '1px solid #ddd', borderRadius: '8px' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#667eea', color: 'white' }}>
-                  <th style={{ padding: '0.8rem', textAlign: 'left' }}>Código</th>
-                  <th style={{ padding: '0.8rem', textAlign: 'left' }}>Descripción</th>
-                  <th style={{ padding: '0.8rem', textAlign: 'right' }}>Precio</th>
-                  <th style={{ padding: '0.8rem', textAlign: 'right' }}>Stock</th>
-                  <th style={{ padding: '0.8rem', textAlign: 'center' }}>Acciones</th>
+              <thead style={{ position: 'sticky', top: 0 }}>
+                <tr style={{ backgroundColor: '#5a5a5a', color: 'white' }}>
+                  <th style={{ padding: '0.8rem', textAlign: 'left', fontSize: '0.9rem' }}>Código</th>
+                  <th style={{ padding: '0.8rem', textAlign: 'left', fontSize: '0.9rem' }}>Descripción</th>
+                  <th style={{ padding: '0.8rem', textAlign: 'right', fontSize: '0.9rem' }}>Precio</th>
+                  <th style={{ padding: '0.8rem', textAlign: 'right', fontSize: '0.9rem' }}>Stock</th>
+                  <th style={{ padding: '0.8rem', textAlign: 'center', fontSize: '0.9rem' }}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {products.map((product) => (
-                  <tr key={product.codigo} style={{ borderBottom: '1px solid #ddd' }}>
-                    <td style={{ padding: '0.8rem' }}>{product.codigo}</td>
-                    <td style={{ padding: '0.8rem' }}>{product.descripcion}</td>
-                    <td style={{ padding: '0.8rem', textAlign: 'right' }}>₡{product.precio.toFixed(2)}</td>
-                    <td style={{ padding: '0.8rem', textAlign: 'right' }}>{product.inventario}</td>
+                  <tr key={product.codigo} style={{ borderBottom: '1px solid #ddd', backgroundColor: '#f9f9f9' }}>
+                    <td style={{ padding: '0.8rem', fontSize: '0.9rem' }}>{product.codigo}</td>
+                    <td style={{ padding: '0.8rem', fontSize: '0.9rem' }}>{product.descripcion}</td>
+                    <td style={{ padding: '0.8rem', textAlign: 'right', fontSize: '0.9rem' }}>₡{product.precio.toFixed(2)}</td>
+                    <td style={{ padding: '0.8rem', textAlign: 'right', fontSize: '0.9rem' }}>{product.inventario}</td>
                     <td style={{ padding: '0.8rem', textAlign: 'center' }}>
-                      <button onClick={() => handleEdit(product)} style={{ marginRight: '0.5rem', padding: '0.4rem 0.8rem' }}>
+                      <button
+                        onClick={() => handleEdit(product)}
+                        className="btn-edit"
+                        title="Editar producto"
+                      >
                         ✏️
                       </button>
-                      <button onClick={() => handleDelete(product.codigo)} style={{ padding: '0.4rem 0.8rem' }}>
+                      <button
+                        onClick={() => handleDelete(product.codigo)}
+                        style={{
+                          width: '36px',
+                          height: '36px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '6px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: '1.1rem',
+                          marginLeft: '0.5rem',
+                          backgroundColor: '#ffcdd2',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#ef9a9a'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#ffcdd2'}
+                        title="Eliminar producto"
+                      >
                         🗑️
                       </button>
                     </td>

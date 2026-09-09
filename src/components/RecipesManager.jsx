@@ -147,28 +147,53 @@ function RecipesManager({ onClose }) {
 
         {loading ? (
           <p>Cargando recetas...</p>
+        ) : recipes.length === 0 ? (
+          <p style={{ textAlign: 'center', color: '#999', padding: '2rem' }}>No hay recetas registradas</p>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
+          <div style={{ overflowX: 'auto', maxHeight: '400px', overflowY: 'auto', border: '1px solid #ddd', borderRadius: '8px' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#667eea', color: 'white' }}>
-                  <th style={{ padding: '0.8rem', textAlign: 'left' }}>Código</th>
-                  <th style={{ padding: '0.8rem', textAlign: 'left' }}>Nombre</th>
-                  <th style={{ padding: '0.8rem', textAlign: 'left' }}>Tiempo</th>
-                  <th style={{ padding: '0.8rem', textAlign: 'center' }}>Acciones</th>
+              <thead style={{ position: 'sticky', top: 0 }}>
+                <tr style={{ backgroundColor: '#5a5a5a', color: 'white' }}>
+                  <th style={{ padding: '0.8rem', textAlign: 'left', fontSize: '0.9rem' }}>Código</th>
+                  <th style={{ padding: '0.8rem', textAlign: 'left', fontSize: '0.9rem' }}>Nombre</th>
+                  <th style={{ padding: '0.8rem', textAlign: 'left', fontSize: '0.9rem' }}>Tiempo</th>
+                  <th style={{ padding: '0.8rem', textAlign: 'center', fontSize: '0.9rem' }}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {recipes.map((recipe) => (
-                  <tr key={recipe.codigo} style={{ borderBottom: '1px solid #ddd' }}>
-                    <td style={{ padding: '0.8rem' }}>{recipe.codigo}</td>
-                    <td style={{ padding: '0.8rem' }}>{recipe.nombre}</td>
-                    <td style={{ padding: '0.8rem' }}>{recipe.tiempo || '-'}</td>
+                  <tr key={recipe.codigo} style={{ borderBottom: '1px solid #ddd', backgroundColor: '#f9f9f9' }}>
+                    <td style={{ padding: '0.8rem', fontSize: '0.9rem' }}>{recipe.codigo}</td>
+                    <td style={{ padding: '0.8rem', fontSize: '0.9rem' }}>{recipe.nombre}</td>
+                    <td style={{ padding: '0.8rem', fontSize: '0.9rem' }}>{recipe.tiempo || '-'}</td>
                     <td style={{ padding: '0.8rem', textAlign: 'center' }}>
-                      <button onClick={() => handleEdit(recipe)} style={{ marginRight: '0.5rem', padding: '0.4rem 0.8rem' }}>
+                      <button
+                        onClick={() => handleEdit(recipe)}
+                        className="btn-edit"
+                        title="Editar receta"
+                      >
                         ✏️
                       </button>
-                      <button onClick={() => handleDelete(recipe.codigo)} style={{ padding: '0.4rem 0.8rem' }}>
+                      <button
+                        onClick={() => handleDelete(recipe.codigo)}
+                        style={{
+                          width: '36px',
+                          height: '36px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '6px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: '1.1rem',
+                          marginLeft: '0.5rem',
+                          backgroundColor: '#ffcdd2',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#ef9a9a'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#ffcdd2'}
+                        title="Eliminar receta"
+                      >
                         🗑️
                       </button>
                     </td>
