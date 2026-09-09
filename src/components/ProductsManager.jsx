@@ -51,15 +51,15 @@ function ProductsManager({ onClose }) {
     })
   }
 
-  const handleDelete = async (codigo) => {
-    if (confirm(`¿Eliminar producto ${codigo}?`)) {
+  const handleInactive = async (codigo) => {
+    if (confirm(`¿Inactivar producto ${codigo}?`)) {
       try {
         const response = await fetch(`/api/products/${codigo}`, { method: 'DELETE' })
         if (response.ok) {
           setProducts(products.filter(p => p.codigo !== codigo))
         }
       } catch (err) {
-        setError('Error al eliminar producto')
+        setError('Error al inactivar producto')
       }
     }
   }
@@ -185,7 +185,7 @@ function ProductsManager({ onClose }) {
                         ✏️
                       </button>
                       <button
-                        onClick={() => handleDelete(product.codigo)}
+                        onClick={() => handleInactive(product.codigo)}
                         style={{
                           width: '36px',
                           height: '36px',
@@ -197,14 +197,14 @@ function ProductsManager({ onClose }) {
                           cursor: 'pointer',
                           fontSize: '1.1rem',
                           marginLeft: '0.5rem',
-                          backgroundColor: '#ffcdd2',
+                          backgroundColor: '#fff3cd',
                           transition: 'all 0.2s'
                         }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#ef9a9a'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = '#ffcdd2'}
-                        title="Eliminar producto"
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#ffe082'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#fff3cd'}
+                        title="Inactivar producto"
                       >
-                        🗑️
+                        ⊘
                       </button>
                     </td>
                   </tr>

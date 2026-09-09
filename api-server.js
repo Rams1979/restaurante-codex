@@ -85,6 +85,11 @@ function updateClient(clientId, updates) {
 
 // Productos
 function getProducts() {
+  const stmt = db.prepare('SELECT * FROM productos WHERE activo = 1 ORDER BY codigo')
+  return stmt.all()
+}
+
+function getAllProducts() {
   const stmt = db.prepare('SELECT * FROM productos ORDER BY codigo')
   return stmt.all()
 }
@@ -140,15 +145,15 @@ function updateProduct(codigo, updates) {
   return db.prepare('SELECT * FROM productos WHERE codigo = ?').get(codigo)
 }
 
-function deleteProduct(codigo) {
-  const stmt = db.prepare('DELETE FROM productos WHERE codigo = ?')
+function inactiveProduct(codigo) {
+  const stmt = db.prepare('UPDATE productos SET activo = 0 WHERE codigo = ?')
   const result = stmt.run(codigo)
 
   if (result.changes === 0) {
     throw new Error('Producto no encontrado')
   }
 
-  return { message: 'Producto eliminado' }
+  return { message: 'Producto inactivado' }
 }
 
 // Recetas
@@ -361,12 +366,12 @@ const server = http.createServer((req, res) => {
     return
   }
 
-  // DELETE /api/products/:codigo
+  // DELETE /api/products/:codigo (Inactivar en lugar de eliminar)
   const deleteProductMatch = req.url.match(/^\/api\/products\/(.+)$/)
   if (deleteProductMatch && req.method === 'DELETE') {
     try {
       const codigo = decodeURIComponent(deleteProductMatch[1])
-      const result = deleteProduct(codigo)
+      const result = inactiveProduct(codigo)
       res.writeHead(200)
       res.end(JSON.stringify(result))
     } catch (err) {
