@@ -13,7 +13,9 @@ Sistema de Punto de Venta (POS) completo para restaurantes, desarrollado con Rea
 
 ### Gestión de Clientes
 - **Registro de Clientes**: Nombre, celular, edad, correo
-- **Selector de Clientes**: Accesible en mesas y barra
+- **Sistema de Descuentos**: Descuentos personalizados por cliente (0-10%)
+- **Edición de Clientes**: Modificar datos (excepto nombre) con botón ✏️
+- **Selector de Clientes**: Accesible en mesas y barra con descuentos visibles
 - **Búsqueda**: Filtra clientes por nombre o celular
 - **Cliente de Contado**: Opción por defecto para ventas rápidas
 - **Persistencia**: Datos guardados en archivo (clientes.txt)
@@ -21,8 +23,9 @@ Sistema de Punto de Venta (POS) completo para restaurantes, desarrollado con Rea
 ### Facturación
 - **Impuesto de Ventas**: 13% calculado automáticamente
 - **Servicio**: 10% solo para mesas (no incluido en barra)
-- **Información del Cliente**: Mostrada en la factura impresa
-- **Ticket de Venta**: Con fecha, hora y detalles de la orden
+- **Descuentos Automáticos**: Aplicados según descuento del cliente
+- **Información del Cliente**: Mostrada en la factura impresa con descuento
+- **Ticket de Venta**: Con fecha, hora, detalles de la orden y descuentos
 - **Impresión**: Compatible con impresoras térmicas
 - **Moneda**: Colones Costarricenses (₡)
 
@@ -109,7 +112,18 @@ codex-pos/
    - Celular
    - Edad
    - Correo Electrónico
+   - Descuento (%) - 0 a 10% (opcional)
 3. Hacer clic en "✅ Registrar"
+
+### Editar Clientes
+1. En el Selector de Clientes, hacer clic en ✏️ del cliente
+2. Modificar datos permitidos:
+   - Celular ✅
+   - Edad ✅
+   - Correo Electrónico ✅
+   - Descuento (0-10%) ✅
+3. El Nombre NO se puede modificar
+4. Hacer clic en "💾 Guardar" para confirmar cambios
 
 ### Crear Orden
 1. Seleccionar Mesa o Asiento de Barra
@@ -143,7 +157,7 @@ Buscar por código o descripción...
 
 ## 📊 Cálculos
 
-### Ejemplo de Orden
+### Ejemplo de Orden (Sin Descuento)
 ```
 Producto: Coca Cola
 Cantidad: 1
@@ -156,23 +170,61 @@ Servicio (10% - solo mesas): ₡130.00
 TOTAL: ₡1,599.00
 ```
 
+### Ejemplo de Orden (Con Descuento 4%)
+```
+Cliente: Rolando Mata (Descuento: 4%)
+Producto: Coca Cola
+Cantidad: 1
+Precio Unitario: ₡1,300.00
+Subtotal: ₡1,300.00
+
+Descuento (4%): -₡52.00
+Subtotal c/ Descuento: ₡1,248.00
+
+Impuesto (13%): ₡162.24
+Servicio (10% - solo mesas): ₡124.80
+
+TOTAL: ₡1,535.04
+```
+
+### Orden de Cálculos
+1. **Subtotal**: Suma de (precio unitario × cantidad) de todos los productos
+2. **Descuento**: Subtotal × (descuento_cliente / 100)
+3. **Subtotal c/ Descuento**: Subtotal - Descuento
+4. **Impuesto**: Subtotal c/ Descuento × 0.13
+5. **Servicio**: Subtotal c/ Descuento × 0.10 (solo mesas)
+6. **Total**: Subtotal c/ Descuento + Impuesto + Servicio
+
 ### Impuesto
-- **Tasa**: 13% del subtotal
+- **Tasa**: 13% del subtotal (después de descuento)
 - **Se aplica**: Siempre (mesas y barra)
 
 ### Servicio
-- **Tasa**: 10% del subtotal
+- **Tasa**: 10% del subtotal (después de descuento)
 - **Se aplica**: Solo en mesas
 - **No se aplica**: En barra
+
+### Descuento
+- **Rango**: 0% a 10% por cliente
+- **Se aplica**: Antes de impuesto y servicio
+- **Es configurable**: Por cliente en registro/edición
+- **Es visible**: En selector de clientes y ticket impreso
 
 ## 🗄️ Base de Datos
 
 ### Formato de Clientes (clientes.txt)
 ```json
-{"id":1234567890,"nombre":"Juan García","celular":"50377778888","edad":"35","correo":"juan@email.com","fecha":"2026-09-08T15:30:45.123Z"}
+{"id":1234567890,"nombre":"Juan García","celular":"50377778888","edad":"35","correo":"juan@email.com","descuento":4,"fecha":"2026-09-08T15:30:45.123Z"}
 ```
 
-Cada línea es un cliente registrado en formato JSON.
+Cada línea es un cliente registrado en formato JSON con los siguientes campos:
+- `id`: ID único del cliente (timestamp)
+- `nombre`: Nombre completo del cliente
+- `celular`: Número de celular
+- `edad`: Edad del cliente
+- `correo`: Correo electrónico
+- `descuento`: Descuento en porcentaje (0-10)
+- `fecha`: Fecha de registro en formato ISO 8601
 
 ## 🔌 API Server
 
@@ -208,7 +260,8 @@ Registra un nuevo cliente.
   "nombre": "María López",
   "celular": "50377779999",
   "edad": "28",
-  "correo": "maria@email.com"
+  "correo": "maria@email.com",
+  "descuento": 0
 }
 ```
 
@@ -220,9 +273,41 @@ Registra un nuevo cliente.
   "celular": "50377779999",
   "edad": "28",
   "correo": "maria@email.com",
+  "descuento": 0,
   "fecha": "2026-09-08T16:45:30.456Z"
 }
 ```
+
+#### PUT /api/clients/:id
+Actualiza los datos de un cliente existente.
+
+**Body:**
+```json
+{
+  "celular": "50377779999",
+  "edad": "29",
+  "correo": "maria.nueva@email.com",
+  "descuento": 5
+}
+```
+
+**Respuesta:**
+```json
+{
+  "id": 1234567891,
+  "nombre": "María López",
+  "celular": "50377779999",
+  "edad": "29",
+  "correo": "maria.nueva@email.com",
+  "descuento": 5,
+  "fecha": "2026-09-08T16:45:30.456Z"
+}
+```
+
+**Notas:**
+- El nombre NO puede ser modificado
+- Validación: descuento debe estar entre 0 y 10
+- Responde 404 si el cliente no existe
 
 ## 🎨 Interfaz de Usuario
 
@@ -340,6 +425,18 @@ server: {
 - ✅ Carrito y resumen muestran ₡
 - ✅ Ticket impreso usa ₡
 
+### Sistema de Descuentos (Validado)
+- ✅ Campo descuento en registro de clientes (0-10%)
+- ✅ Edición de clientes con botón ✏️
+- ✅ Descuentos visibles en selector de clientes
+- ✅ Aplicación correcta de descuentos en carrito
+- ✅ Cálculos de impuesto/servicio sobre subtotal con descuento
+- ✅ Descuentos mostrados en línea verde en resumen
+- ✅ Descuentos persistidos en clientes.txt
+- ✅ API endpoints PUT funcionales
+- ✅ Descuentos mostrados en ticket impreso
+- ✅ Validación: rango 0-10% en servidor
+
 ## 🐛 Solución de Problemas
 
 ### "API Server no disponible"
@@ -378,6 +475,6 @@ Proyecto desarrollado para Restaurante Codex.
 
 ---
 
-**Última actualización**: 08 de Septiembre de 2026 - Validación de Client Registration y cambio a Colones Costarricenses
-**Versión**: 1.0.2
-**Estado**: ✅ Producción - Client Registration validado, Moneda en ₡
+**Última actualización**: 09 de Septiembre de 2026 - Sistema de descuentos implementado y validado
+**Versión**: 1.1.0
+**Estado**: ✅ Producción - Sistema de descuentos, Edición de clientes, Moneda en ₡
