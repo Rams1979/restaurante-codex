@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "PowerShell($nodePath = Get-Item \"HKLM:\\\\SOFTWARE\\\\Node.js\" -ErrorAction SilentlyContinue | Get-ItemProperty -Name \"InstallPath\" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty InstallPath; if \\($nodePath\\) { \"$nodePath\\\\npm.cmd run dev\" } else { [Environment]::GetEnvironmentVariables\\('Machine'\\) | Where-Object { $_ -match 'nodejs' } })",
+      "PowerShell($env:PATH = \"C:\\\\Program Files\\\\nodejs;$env:PATH\"; cd \"C:\\\\Users\\\\rolan\\\\OneDrive - asembis\\\\Codex\\\\codex-pos\"; npm run dev)",
+      "PowerShell($env:PATH = \"C:\\\\Program Files\\\\nodejs;$env:PATH\"; cd \"C:\\\\Users\\\\rolan\\\\OneDrive - asembis\\\\Codex\\\\codex-pos\"; node api-server.js)",
+      "Bash(git config *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git add *)"
+    ]
+  }
+}

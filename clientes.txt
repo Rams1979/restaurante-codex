@@ -3,3 +3,4 @@
 {"id":1788889424784,"nombre":"1","celular":"1","edad":"1","correo":"1@1.com","descuento":4,"fecha":"2026-09-08T17:43:44.784Z"}
 {"id":1788889493805,"nombre":"Carlos Mendoza","celular":"50377776666","edad":"32","correo":"carlos@email.com","descuento":4,"fecha":"2026-09-08T17:44:53.805Z"}
 {"id":1788913679519,"nombre":"Evelyn","celular":"123459","edad":"40","correo":"evelyngr_7@yahoo.es","fecha":"2026-09-09T00:27:59.519Z"}
+{"id":1788968877372,"nombre":"María García","celular":"50399998888","edad":"28","correo":"maria@email.com","descuento":5,"fecha":"2026-09-09T15:47:57.372Z"}
