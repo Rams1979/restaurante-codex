@@ -62,7 +62,13 @@ npm install
 node db-init.js
 ```
 
-4. **Iniciar los servidores**
+4. **Migrar datos de Excel (opcional)**
+Si tienes archivos `productos.xlsx` y `recetas.xlsx`:
+```bash
+node migrate-excel-to-sqlite.js
+```
+
+5. **Iniciar los servidores**
 ```bash
 npm run dev
 ```
@@ -99,7 +105,15 @@ codex-pos/
 
 ## 💻 Uso del Sistema
 
-### Cargar Productos
+### Gestionar Productos (en Base de Datos)
+1. Hacer clic en "📦 Gestionar Productos"
+2. Opciones disponibles:
+   - **Agregar**: Rellenar formulario y hacer clic "➕ Agregar Producto"
+   - **Editar**: Hacer clic en ✏️ del producto a modificar
+   - **Eliminar**: Hacer clic en 🗑️ del producto
+3. Los cambios se guardan inmediatamente en SQLite
+
+### Cargar Productos desde Excel (Alternativa)
 1. Preparar archivo Excel con columnas:
    - `codigo`: ID único del producto
    - `descripcion`: Nombre del producto
@@ -113,6 +127,21 @@ codex-pos/
 
 2. Hacer clic en "📁 Cargar Productos"
 3. Seleccionar el archivo Excel
+4. Los datos se cargan en memoria (usar "📦 Gestionar Productos" para guardar en BD)
+
+### Gestionar Recetas (en Base de Datos)
+1. Hacer clic en "🍹 Gestionar Recetas"
+2. Opciones disponibles:
+   - **Agregar**: Rellenar formulario (código, nombre, ingredientes, instrucciones, tiempo)
+   - **Editar**: Hacer clic en ✏️ de la receta a modificar
+   - **Eliminar**: Hacer clic en 🗑️ de la receta
+3. Los cambios se guardan inmediatamente en SQLite
+
+### Cargar Recetas desde Excel (Alternativa)
+1. Preparar archivo Excel con columnas (código, nombre, ingredientes, instrucciones, tiempo)
+2. Hacer clic en "📖 Cargar Recetas"
+3. Seleccionar el archivo Excel
+4. Los datos se cargan en memoria (usar "🍹 Gestionar Recetas" para guardar en BD)
 
 ### Registrar Clientes
 1. Hacer clic en "➕ Nuevo Cliente"
