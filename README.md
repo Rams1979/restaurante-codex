@@ -4,7 +4,8 @@
 
 **Versión**: 2.2.0  
 **Estado**: ✅ Producción - Sistema con SQLite, rebajo automático de inventario, gestión de activos/inactivos, sin archivos Excel  
-**Última actualización**: 09 de Septiembre de 2026
+**Última actualización**: 11 de Septiembre de 2026  
+**GitHub**: Lee `GITHUB_SETUP.md` para sincronizar entre 2 computadoras
 
 ---
 
@@ -57,11 +58,22 @@
 
 ---
 
+## 🌐 Sincronizar en GitHub
+
+Para ejecutar desde 2 computadoras diferentes, mira **`GITHUB_SETUP.md`** que incluye:
+- ✅ Crear repositorio en GitHub
+- ✅ Conectar proyecto local
+- ✅ Clonar en segunda computadora
+- ✅ Workflow de sincronización diaria
+- ✅ Resolver conflictos
+
+---
+
 ## 🚀 Instalación Rápida
 
 ### Requisitos
-- Node.js 16+
-- npm o yarn
+- Node.js 16+ (v24.20.0 recomendado)
+- npm o yarn (11.19.0 recomendado)
 
 ### Pasos
 
@@ -87,8 +99,9 @@ O con PowerShell:
 .\start.ps1
 ```
 
-**El servidor está en**: http://localhost:3000  
-**API en**: http://localhost:3002
+**Frontend**: http://localhost:3001  
+**API**: http://localhost:3003  
+**Base de Datos**: SQLite local (codex.db)
 
 ---
 
@@ -531,6 +544,12 @@ Proyecto desarrollado para **Restaurante Codex**.
 ---
 
 ## 📋 Changelog
+
+### v2.2.1 (11 Septiembre 2026)
+✅ Guía completa GITHUB_SETUP.md para sincronizar entre 2 computadoras  
+✅ .gitignore configurado para evitar sincronizar archivos temporales  
+✅ Documentación actualizada con URLs correctas (3001/3003)  
+✅ Sistema probado y verificado en funcionamiento  
 
 ### v2.2.0 (09 Septiembre 2026)
 ✅ Rebajo automático de inventario al cobrar/imprimir  
