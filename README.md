@@ -1,11 +1,12 @@
-# 🍽️ Restaurante Codex - Sistema POS v2.2
+# 🍽️ Restaurante Codex - Sistema POS v2.3
 
-**Sistema de Punto de Venta (POS) moderno para restaurantes** con base de datos SQLite, gestión completa de inventario con rebajo automático, clientes, facturación y control de productos activos/inactivos.
+**Sistema de Punto de Venta (POS) moderno para restaurantes** deployado en la nube con PostgreSQL, gestión completa de inventario con rebajo automático, clientes, facturación y control de productos activos/inactivos.
 
-**Versión**: 2.2.0  
-**Estado**: ✅ Producción - Sistema con SQLite, rebajo automático de inventario, gestión de activos/inactivos, sin archivos Excel  
-**Última actualización**: 11 de Septiembre de 2026  
-**GitHub**: Lee `GITHUB_SETUP.md` para sincronizar entre 2 computadoras
+**Versión**: 2.3.0  
+**Estado**: ✅ Producción - Sistema en internet con PostgreSQL, rebajo automático de inventario, deploy en Railway  
+**Última actualización**: 12 de Septiembre de 2026  
+**GitHub**: Lee `GITHUB_SETUP.md` para sincronizar entre 2 computadoras  
+**🌐 URL Pública**: https://restaurante-codex-production.up.railway.app
 
 ---
 
@@ -50,11 +51,12 @@
 - **Recuperación posible**: Productos inactivos recuperables
 - **Gestión segura**: No se pueden seleccionar en órdenes
 
-### 🗄️ Base de Datos SQLite
+### 🗄️ Base de Datos PostgreSQL (en la Nube)
 - **5 Tablas**: productos, recetas, clientes, órdenes, órdenes_items
-- **Índices**: Búsquedas rápidas por nombre, celular, mesa y fecha
-- **WAL Mode**: Mejor concurrencia y rendimiento
+- **Alojado en Railway**: Base de datos en la nube, sincronizada automáticamente
+- **Acceso Remoto**: Datos disponibles desde cualquier dispositivo
 - **Prepared Statements**: Prevención de SQL injection
+- **Backups Automáticos**: Railway mantiene backups de seguridad
 
 ---
 
@@ -71,11 +73,23 @@ Para ejecutar desde 2 computadoras diferentes, mira **`GITHUB_SETUP.md`** que in
 
 ## 🚀 Instalación Rápida
 
-### Requisitos
+### Opción 1: Usar en Internet (Recomendado) 🌐
+**No requiere instalación. Solo abre el navegador:**
+```
+https://restaurante-codex-production.up.railway.app
+```
+- ✅ Acceso desde cualquier dispositivo
+- ✅ Datos sincronizados automáticamente
+- ✅ Base de datos en la nube (PostgreSQL)
+- ✅ Siempre disponible
+
+### Opción 2: Instalación Local
+
+#### Requisitos
 - Node.js 16+ (v24.20.0 recomendado)
 - npm o yarn (11.19.0 recomendado)
 
-### Pasos
+#### Pasos
 
 ```bash
 # 1. Descargar el proyecto
@@ -544,6 +558,14 @@ Proyecto desarrollado para **Restaurante Codex**.
 ---
 
 ## 📋 Changelog
+
+### v2.3.0 (12 Septiembre 2026)
+✅ **🌐 Deploy exitoso en Railway** - Aplicación disponible en internet  
+✅ **Migración a PostgreSQL** - Base de datos en la nube  
+✅ **Frontend estático compilado** - Servido directamente desde API  
+✅ **Acceso desde cualquier dispositivo** - Sin necesidad de instalación local  
+✅ **URL Pública**: https://restaurante-codex-production.up.railway.app  
+✅ **Documentación actualizada** con instrucciones de internet y local  
 
 ### v2.2.1 (11 Septiembre 2026)
 ✅ Guía completa GITHUB_SETUP.md para sincronizar entre 2 computadoras  
