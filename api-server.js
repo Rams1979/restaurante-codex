@@ -1,23 +1,74 @@
 import http from 'http'
-import Database from 'better-sqlite3'
-import path from 'path'
-import { fileURLToPath } from 'url'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const dbPath = path.join(__dirname, 'codex.db')
+import pkg from 'pg'
+const { Pool } = pkg
 
 console.log('API Server iniciando...')
-console.log('Base de datos:', dbPath)
+console.log('Base de datos: PostgreSQL')
 
-const db = new Database(dbPath)
-db.pragma('journal_mode = WAL')
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL
+})
 
-function getClients() {
-  const stmt = db.prepare('SELECT * FROM clientes ORDER BY nombre')
-  return stmt.all()
+pool.on('error', (err) => {
+  console.error('Pool error:', err.message)
+})
+
+async function initializeDatabase() {
+  const client = await pool.connect()
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS clientes (
+        id SERIAL PRIMARY KEY,
+        nombre VARCHAR(255) NOT NULL,
+        celular VARCHAR(20),
+        edad INTEGER,
+        correo VARCHAR(255),
+        descuento INTEGER DEFAULT 0,
+        fecha TIMESTAMP DEFAULT NOW()
+      )
+    `)
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS productos (
+        id SERIAL PRIMARY KEY,
+        codigo VARCHAR(50) UNIQUE NOT NULL,
+        descripcion TEXT,
+        precio DECIMAL(10, 2),
+        inventario INTEGER DEFAULT 0,
+        receta TEXT,
+        peso VARCHAR(50),
+        promoNombre VARCHAR(255),
+        promoCantidad INTEGER,
+        promoPrecio DECIMAL(10, 2),
+        activo INTEGER DEFAULT 1
+      )
+    `)
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS recetas (
+        id SERIAL PRIMARY KEY,
+        codigo VARCHAR(50) UNIQUE NOT NULL,
+        nombre VARCHAR(255),
+        ingredientes TEXT,
+        instrucciones TEXT,
+        tiempo INTEGER
+      )
+    `)
+
+    console.log('✅ Tablas inicializadas')
+  } finally {
+    client.release()
+  }
 }
 
-function addClient(clientData) {
+await initializeDatabase()
+
+async function getClients() {
+  const result = await pool.query('SELECT * FROM clientes ORDER BY nombre')
+  return result.rows
+}
+
+async function addClient(clientData) {
   if (!clientData.nombre || !clientData.celular || !clientData.edad || !clientData.correo) {
     throw new Error('Faltan campos requeridos')
   }
@@ -27,28 +78,19 @@ function addClient(clientData) {
     throw new Error('El descuento debe estar entre 0 y 10')
   }
 
-  const stmt = db.prepare(`
-    INSERT INTO clientes (nombre, celular, edad, correo, descuento)
-    VALUES (?, ?, ?, ?, ?)
-  `)
+  const result = await pool.query(
+    'INSERT INTO clientes (nombre, celular, edad, correo, descuento) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+    [clientData.nombre, clientData.celular, clientData.edad, clientData.correo, descuento]
+  )
 
-  const result = stmt.run(clientData.nombre, clientData.celular, clientData.edad, clientData.correo, descuento)
-
-  return {
-    id: result.lastInsertRowid,
-    nombre: clientData.nombre,
-    celular: clientData.celular,
-    edad: clientData.edad,
-    correo: clientData.correo,
-    descuento: descuento,
-    fecha: new Date().toISOString()
-  }
+  return result.rows[0]
 }
 
-function updateClient(clientId, updates) {
+async function updateClient(clientId, updates) {
   const allowedFields = ['celular', 'edad', 'correo', 'descuento']
   const updateParts = []
   const values = []
+  let paramCount = 1
 
   for (const field of allowedFields) {
     if (updates[field] !== undefined) {
@@ -57,12 +99,13 @@ function updateClient(clientId, updates) {
         if (descuento < 0 || descuento > 10) {
           throw new Error('El descuento debe estar entre 0 y 10')
         }
-        updateParts.push(`${field} = ?`)
+        updateParts.push(`${field} = $${paramCount}`)
         values.push(descuento)
       } else {
-        updateParts.push(`${field} = ?`)
+        updateParts.push(`${field} = $${paramCount}`)
         values.push(updates[field])
       }
+      paramCount++
     }
   }
 
@@ -71,160 +114,152 @@ function updateClient(clientId, updates) {
   }
 
   values.push(clientId)
-  const query = `UPDATE clientes SET ${updateParts.join(', ')} WHERE id = ?`
-  const stmt = db.prepare(query)
-  const result = stmt.run(...values)
+  const query = `UPDATE clientes SET ${updateParts.join(', ')} WHERE id = $${paramCount} RETURNING *`
+  const result = await pool.query(query, values)
 
-  if (result.changes === 0) {
+  if (result.rows.length === 0) {
     throw new Error('Cliente no encontrado')
   }
 
-  const client = db.prepare('SELECT * FROM clientes WHERE id = ?').get(clientId)
-  return client
+  return result.rows[0]
 }
 
-// Productos (solo activos)
-function getProducts() {
-  const stmt = db.prepare('SELECT * FROM productos WHERE activo = 1 ORDER BY codigo')
-  return stmt.all()
+async function getProducts() {
+  const result = await pool.query('SELECT * FROM productos WHERE activo = 1 ORDER BY codigo')
+  return result.rows
 }
 
-function addProduct(productData) {
+async function addProduct(productData) {
   if (!productData.codigo || !productData.descripcion || !productData.precio) {
     throw new Error('Faltan campos requeridos')
   }
 
-  const stmt = db.prepare(`
-    INSERT INTO productos (codigo, descripcion, precio, inventario, receta, peso, promoNombre, promoCantidad, promoPrecio)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `)
-
-  const result = stmt.run(
-    productData.codigo,
-    productData.descripcion,
-    productData.precio,
-    productData.inventario || 0,
-    productData.receta || null,
-    productData.peso || null,
-    productData.promoNombre || null,
-    productData.promoCantidad || null,
-    productData.promoPrecio || null
+  const result = await pool.query(
+    `INSERT INTO productos (codigo, descripcion, precio, inventario, receta, peso, promoNombre, promoCantidad, promoPrecio)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+    [
+      productData.codigo,
+      productData.descripcion,
+      productData.precio,
+      productData.inventario || 0,
+      productData.receta || null,
+      productData.peso || null,
+      productData.promoNombre || null,
+      productData.promoCantidad || null,
+      productData.promoPrecio || null
+    ]
   )
 
-  return db.prepare('SELECT * FROM productos WHERE codigo = ?').get(productData.codigo)
+  return result.rows[0]
 }
 
-function updateProduct(codigo, updates) {
-  const stmt = db.prepare(`
-    UPDATE productos
-    SET descripcion = ?, precio = ?, inventario = ?, receta = ?, peso = ?, promoNombre = ?, promoCantidad = ?, promoPrecio = ?
-    WHERE codigo = ?
-  `)
-
-  const result = stmt.run(
-    updates.descripcion,
-    updates.precio,
-    updates.inventario,
-    updates.receta || null,
-    updates.peso || null,
-    updates.promoNombre || null,
-    updates.promoCantidad || null,
-    updates.promoPrecio || null,
-    codigo
+async function updateProduct(codigo, updates) {
+  const result = await pool.query(
+    `UPDATE productos
+     SET descripcion = $1, precio = $2, inventario = $3, receta = $4, peso = $5, promoNombre = $6, promoCantidad = $7, promoPrecio = $8
+     WHERE codigo = $9 RETURNING *`,
+    [
+      updates.descripcion,
+      updates.precio,
+      updates.inventario,
+      updates.receta || null,
+      updates.peso || null,
+      updates.promoNombre || null,
+      updates.promoCantidad || null,
+      updates.promoPrecio || null,
+      codigo
+    ]
   )
 
-  if (result.changes === 0) {
+  if (result.rows.length === 0) {
     throw new Error('Producto no encontrado')
   }
 
-  return db.prepare('SELECT * FROM productos WHERE codigo = ?').get(codigo)
+  return result.rows[0]
 }
 
-function inactiveProduct(codigo) {
-  const stmt = db.prepare('UPDATE productos SET activo = 0 WHERE codigo = ?')
-  const result = stmt.run(codigo)
+async function inactiveProduct(codigo) {
+  const result = await pool.query('UPDATE productos SET activo = 0 WHERE codigo = $1 RETURNING *', [codigo])
 
-  if (result.changes === 0) {
+  if (result.rows.length === 0) {
     throw new Error('Producto no encontrado')
   }
 
   return { message: 'Producto inactivado' }
 }
 
-// Recetas
-function getRecipes() {
-  const stmt = db.prepare('SELECT * FROM recetas ORDER BY codigo')
-  return stmt.all()
+async function getRecipes() {
+  const result = await pool.query('SELECT * FROM recetas ORDER BY codigo')
+  return result.rows
 }
 
-function addRecipe(recipeData) {
+async function addRecipe(recipeData) {
   if (!recipeData.codigo || !recipeData.nombre) {
     throw new Error('Faltan campos requeridos')
   }
 
-  const stmt = db.prepare(`
-    INSERT INTO recetas (codigo, nombre, ingredientes, instrucciones, tiempo)
-    VALUES (?, ?, ?, ?, ?)
-  `)
-
-  stmt.run(
-    recipeData.codigo,
-    recipeData.nombre,
-    recipeData.ingredientes || null,
-    recipeData.instrucciones || null,
-    recipeData.tiempo || null
+  const result = await pool.query(
+    `INSERT INTO recetas (codigo, nombre, ingredientes, instrucciones, tiempo)
+     VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+    [
+      recipeData.codigo,
+      recipeData.nombre,
+      recipeData.ingredientes || null,
+      recipeData.instrucciones || null,
+      recipeData.tiempo || null
+    ]
   )
 
-  return db.prepare('SELECT * FROM recetas WHERE codigo = ?').get(recipeData.codigo)
+  return result.rows[0]
 }
 
-function updateRecipe(codigo, updates) {
-  const stmt = db.prepare(`
-    UPDATE recetas
-    SET nombre = ?, ingredientes = ?, instrucciones = ?, tiempo = ?
-    WHERE codigo = ?
-  `)
-
-  const result = stmt.run(
-    updates.nombre,
-    updates.ingredientes || null,
-    updates.instrucciones || null,
-    updates.tiempo || null,
-    codigo
+async function updateRecipe(codigo, updates) {
+  const result = await pool.query(
+    `UPDATE recetas
+     SET nombre = $1, ingredientes = $2, instrucciones = $3, tiempo = $4
+     WHERE codigo = $5 RETURNING *`,
+    [
+      updates.nombre,
+      updates.ingredientes || null,
+      updates.instrucciones || null,
+      updates.tiempo || null,
+      codigo
+    ]
   )
 
-  if (result.changes === 0) {
+  if (result.rows.length === 0) {
     throw new Error('Receta no encontrada')
   }
 
-  return db.prepare('SELECT * FROM recetas WHERE codigo = ?').get(codigo)
+  return result.rows[0]
 }
 
-function deleteRecipe(codigo) {
-  const stmt = db.prepare('DELETE FROM recetas WHERE codigo = ?')
-  const result = stmt.run(codigo)
+async function deleteRecipe(codigo) {
+  const result = await pool.query('DELETE FROM recetas WHERE codigo = $1', [codigo])
 
-  if (result.changes === 0) {
+  if (result.rowCount === 0) {
     throw new Error('Receta no encontrada')
   }
 
   return { message: 'Receta eliminada' }
 }
 
-function updateInventory(items) {
+async function updateInventory(items) {
   for (const item of items) {
-    const stmt = db.prepare('UPDATE productos SET inventario = inventario - ? WHERE codigo = ?')
-    const result = stmt.run(item.cantidad, item.codigo)
-    if (result.changes === 0) {
+    const result = await pool.query(
+      'UPDATE productos SET inventario = inventario - $1 WHERE codigo = $2 RETURNING *',
+      [item.cantidad, item.codigo]
+    )
+    if (result.rows.length === 0) {
       throw new Error(`Producto no encontrado: ${item.codigo}`)
     }
   }
   return { message: 'Inventario actualizado' }
 }
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
   res.setHeader('Content-Type', 'application/json')
 
@@ -237,7 +272,7 @@ const server = http.createServer((req, res) => {
   // GET /api/clients
   if (req.url === '/api/clients' && req.method === 'GET') {
     try {
-      const clients = getClients()
+      const clients = await getClients()
       res.writeHead(200)
       res.end(JSON.stringify(clients))
     } catch (err) {
@@ -251,10 +286,8 @@ const server = http.createServer((req, res) => {
   // POST /api/clients
   if (req.url === '/api/clients' && req.method === 'POST') {
     let body = ''
-    req.on('data', chunk => {
-      body += chunk.toString()
-    })
-    req.on('end', () => {
+    req.on('data', chunk => { body += chunk.toString() })
+    req.on('end', async () => {
       try {
         console.log('POST /api/clients - Datos recibidos:', body)
         if (!body) {
@@ -263,8 +296,7 @@ const server = http.createServer((req, res) => {
           return
         }
         const clientData = JSON.parse(body)
-        console.log('Datos parseados:', clientData)
-        const newClient = addClient(clientData)
+        const newClient = await addClient(clientData)
         console.log('Cliente guardado exitosamente:', newClient.id)
         res.writeHead(201)
         res.end(JSON.stringify(newClient))
@@ -274,11 +306,6 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ error: err.message }))
       }
     })
-    req.on('error', err => {
-      console.error('Error en request:', err.message)
-      res.writeHead(500)
-      res.end(JSON.stringify({ error: 'Request error' }))
-    })
     return
   }
 
@@ -287,21 +314,16 @@ const server = http.createServer((req, res) => {
   if (putMatch && req.method === 'PUT') {
     const clientId = parseInt(putMatch[1])
     let body = ''
-    req.on('data', chunk => {
-      body += chunk.toString()
-    })
-    req.on('end', () => {
+    req.on('data', chunk => { body += chunk.toString() })
+    req.on('end', async () => {
       try {
-        console.log('PUT /api/clients/:id - Datos recibidos:', body)
         if (!body) {
           res.writeHead(400)
           res.end(JSON.stringify({ error: 'Body vacío' }))
           return
         }
         const updateData = JSON.parse(body)
-        console.log('Datos parseados:', updateData)
-        const updatedClient = updateClient(clientId, updateData)
-        console.log('Cliente actualizado exitosamente:', clientId)
+        const updatedClient = await updateClient(clientId, updateData)
         res.writeHead(200)
         res.end(JSON.stringify(updatedClient))
       } catch (err) {
@@ -310,18 +332,13 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ error: err.message }))
       }
     })
-    req.on('error', err => {
-      console.error('Error en request:', err.message)
-      res.writeHead(500)
-      res.end(JSON.stringify({ error: 'Request error' }))
-    })
     return
   }
 
   // GET /api/products
   if (req.url === '/api/products' && req.method === 'GET') {
     try {
-      const products = getProducts()
+      const products = await getProducts()
       res.writeHead(200)
       res.end(JSON.stringify(products))
     } catch (err) {
@@ -336,10 +353,10 @@ const server = http.createServer((req, res) => {
   if (req.url === '/api/products' && req.method === 'POST') {
     let body = ''
     req.on('data', chunk => { body += chunk.toString() })
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const productData = JSON.parse(body)
-        const newProduct = addProduct(productData)
+        const newProduct = await addProduct(productData)
         res.writeHead(201)
         res.end(JSON.stringify(newProduct))
       } catch (err) {
@@ -357,10 +374,10 @@ const server = http.createServer((req, res) => {
     const codigo = decodeURIComponent(putProductMatch[1])
     let body = ''
     req.on('data', chunk => { body += chunk.toString() })
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const updateData = JSON.parse(body)
-        const updatedProduct = updateProduct(codigo, updateData)
+        const updatedProduct = await updateProduct(codigo, updateData)
         res.writeHead(200)
         res.end(JSON.stringify(updatedProduct))
       } catch (err) {
@@ -377,7 +394,7 @@ const server = http.createServer((req, res) => {
   if (deleteProductMatch && req.method === 'DELETE') {
     try {
       const codigo = decodeURIComponent(deleteProductMatch[1])
-      const result = inactiveProduct(codigo)
+      const result = await inactiveProduct(codigo)
       res.writeHead(200)
       res.end(JSON.stringify(result))
     } catch (err) {
@@ -391,7 +408,7 @@ const server = http.createServer((req, res) => {
   // GET /api/recipes
   if (req.url === '/api/recipes' && req.method === 'GET') {
     try {
-      const recipes = getRecipes()
+      const recipes = await getRecipes()
       res.writeHead(200)
       res.end(JSON.stringify(recipes))
     } catch (err) {
@@ -406,10 +423,10 @@ const server = http.createServer((req, res) => {
   if (req.url === '/api/recipes' && req.method === 'POST') {
     let body = ''
     req.on('data', chunk => { body += chunk.toString() })
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const recipeData = JSON.parse(body)
-        const newRecipe = addRecipe(recipeData)
+        const newRecipe = await addRecipe(recipeData)
         res.writeHead(201)
         res.end(JSON.stringify(newRecipe))
       } catch (err) {
@@ -427,10 +444,10 @@ const server = http.createServer((req, res) => {
     const codigo = decodeURIComponent(putRecipeMatch[1])
     let body = ''
     req.on('data', chunk => { body += chunk.toString() })
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const updateData = JSON.parse(body)
-        const updatedRecipe = updateRecipe(codigo, updateData)
+        const updatedRecipe = await updateRecipe(codigo, updateData)
         res.writeHead(200)
         res.end(JSON.stringify(updatedRecipe))
       } catch (err) {
@@ -447,7 +464,7 @@ const server = http.createServer((req, res) => {
   if (deleteRecipeMatch && req.method === 'DELETE') {
     try {
       const codigo = decodeURIComponent(deleteRecipeMatch[1])
-      const result = deleteRecipe(codigo)
+      const result = await deleteRecipe(codigo)
       res.writeHead(200)
       res.end(JSON.stringify(result))
     } catch (err) {
@@ -462,10 +479,10 @@ const server = http.createServer((req, res) => {
   if (req.url === '/api/inventory' && req.method === 'POST') {
     let body = ''
     req.on('data', chunk => { body += chunk.toString() })
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const items = JSON.parse(body)
-        const result = updateInventory(items)
+        const result = await updateInventory(items)
         res.writeHead(200)
         res.end(JSON.stringify(result))
       } catch (err) {
@@ -481,9 +498,9 @@ const server = http.createServer((req, res) => {
   res.end(JSON.stringify({ error: 'Not found' }))
 })
 
-const API_PORT = 3003
+const API_PORT = process.env.PORT || 3003
 server.listen(API_PORT, () => {
-  console.log(`✅ API Server corriendo en http://localhost:${API_PORT}`)
+  console.log(`✅ API Server corriendo en puerto ${API_PORT}`)
 })
 
 server.on('error', (err) => {
