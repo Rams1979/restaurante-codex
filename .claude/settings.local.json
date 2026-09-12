@@ -7,7 +7,11 @@
       "PowerShell($env:PATH = \"C:\\\\Program Files\\\\nodejs;$env:PATH\"; cd \"C:\\\\Users\\\\rolan\\\\OneDrive - asembis\\\\Codex\\\\codex-pos\"; node api-server.js)",
       "Bash(git config *)",
       "Bash(git commit -m ' *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(npm --version)",
+      "Bash(npm list *)",
+      "Read(//c/Users/rolan/OneDrive - asembis/Codex/comparador-reportes/**)",
+      "Bash(mkdir -p app/models app/views app/controllers app/static/css app/static/js uploads)"
     ]
   }
 }
