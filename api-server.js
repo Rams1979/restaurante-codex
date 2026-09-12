@@ -1,9 +1,16 @@
 import http from 'http'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import pkg from 'pg'
 const { Pool } = pkg
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const distPath = path.join(__dirname, 'dist')
+
 console.log('API Server iniciando...')
 console.log('Base de datos: PostgreSQL')
+console.log('Sirviendo archivos desde:', distPath)
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL
@@ -257,6 +264,30 @@ async function updateInventory(items) {
   return { message: 'Inventario actualizado' }
 }
 
+function serveStaticFile(filePath, res) {
+  try {
+    if (!fs.existsSync(filePath)) return false
+    const content = fs.readFileSync(filePath, 'utf8')
+    const ext = path.extname(filePath)
+    const mimeTypes = {
+      '.html': 'text/html',
+      '.js': 'text/javascript',
+      '.css': 'text/css',
+      '.json': 'application/json',
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.gif': 'image/gif',
+      '.svg': 'image/svg+xml'
+    }
+    const contentType = mimeTypes[ext] || 'application/octet-stream'
+    res.writeHead(200, { 'Content-Type': contentType })
+    res.end(content)
+    return true
+  } catch (err) {
+    return false
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
@@ -492,6 +523,26 @@ const server = http.createServer(async (req, res) => {
       }
     })
     return
+  }
+
+  // Servir archivos estáticos
+  if (req.method === 'GET') {
+    let urlPath = req.url === '/' ? '/index.html' : req.url
+
+    // Evitar directory traversal
+    if (urlPath.includes('..')) {
+      res.writeHead(404)
+      res.end(JSON.stringify({ error: 'Not found' }))
+      return
+    }
+
+    const filePath = path.join(distPath, urlPath)
+    if (serveStaticFile(filePath, res)) return
+
+    // Si no encuentra el archivo exacto, intenta index.html (para rutas SPA)
+    if (!path.extname(urlPath)) {
+      if (serveStaticFile(path.join(distPath, 'index.html'), res)) return
+    }
   }
 
   res.writeHead(404)
