@@ -11,6 +11,7 @@ const distPath = path.join(__dirname, 'dist')
 console.log('🚀 API Server iniciando...')
 console.log('🗄️ Base de datos: PostgreSQL')
 console.log('📁 Sirviendo archivos desde:', distPath)
+console.log('✅ Con función parseProduct para convertir precios a números')
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL
