@@ -131,9 +131,17 @@ async function updateClient(clientId, updates) {
   return result.rows[0]
 }
 
+function parseProduct(row) {
+  return {
+    ...row,
+    precio: parseFloat(row.precio),
+    promoPrecio: row.promoPrecio ? parseFloat(row.promoPrecio) : null
+  }
+}
+
 async function getProducts() {
   const result = await pool.query('SELECT * FROM productos WHERE activo = 1 ORDER BY codigo')
-  return result.rows
+  return result.rows.map(parseProduct)
 }
 
 async function addProduct(productData) {
@@ -157,7 +165,7 @@ async function addProduct(productData) {
     ]
   )
 
-  return result.rows[0]
+  return parseProduct(result.rows[0])
 }
 
 async function updateProduct(codigo, updates) {
@@ -182,7 +190,7 @@ async function updateProduct(codigo, updates) {
     throw new Error('Producto no encontrado')
   }
 
-  return result.rows[0]
+  return parseProduct(result.rows[0])
 }
 
 async function inactiveProduct(codigo) {
