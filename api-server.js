@@ -62,6 +62,32 @@ async function initializeDatabase() {
       )
     `)
 
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS cajas (
+        id SERIAL PRIMARY KEY,
+        monto_inicial DECIMAL(10, 2) NOT NULL,
+        monto_cierre DECIMAL(10, 2),
+        efectivo_esperado DECIMAL(10, 2),
+        efectivo_real DECIMAL(10, 2),
+        diferencia DECIMAL(10, 2),
+        estado VARCHAR(50) DEFAULT 'abierta',
+        fecha_apertura TIMESTAMP DEFAULT NOW(),
+        fecha_cierre TIMESTAMP,
+        notas TEXT
+      )
+    `)
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS movimientos_caja (
+        id SERIAL PRIMARY KEY,
+        caja_id INTEGER NOT NULL REFERENCES cajas(id),
+        tipo VARCHAR(50),
+        monto DECIMAL(10, 2),
+        descripcion TEXT,
+        fecha TIMESTAMP DEFAULT NOW()
+      )
+    `)
+
     console.log('✅ Tablas inicializadas')
   } finally {
     client.release()
@@ -262,6 +288,112 @@ async function updateInventory(items) {
     }
   }
   return { message: 'Inventario actualizado' }
+}
+
+async function openCashRegister(montoInicial) {
+  if (!montoInicial || isNaN(montoInicial)) {
+    throw new Error('Monto inicial debe ser un número válido')
+  }
+  const result = await pool.query(
+    'INSERT INTO cajas (monto_inicial, estado) VALUES ($1, $2) RETURNING *',
+    [parseFloat(montoInicial), 'abierta']
+  )
+  return result.rows[0]
+}
+
+async function getCurrentCashRegister() {
+  const result = await pool.query(
+    `SELECT c.*,
+      COALESCE(SUM(CASE WHEN m.tipo = 'venta_efectivo' THEN m.monto ELSE 0 END), 0) as ventas_efectivo,
+      COALESCE(SUM(CASE WHEN m.tipo = 'venta_tarjeta' THEN m.monto ELSE 0 END), 0) as ventas_tarjeta,
+      COALESCE(SUM(CASE WHEN m.tipo = 'venta_sinpe' THEN m.monto ELSE 0 END), 0) as ventas_sinpe,
+      COALESCE(SUM(CASE WHEN m.tipo = 'retiro' THEN m.monto ELSE 0 END), 0) as retiros,
+      COALESCE(SUM(CASE WHEN m.tipo = 'gasto' THEN m.monto ELSE 0 END), 0) as gastos
+     FROM cajas c
+     LEFT JOIN movimientos_caja m ON c.id = m.caja_id
+     WHERE c.estado = 'abierta'
+     GROUP BY c.id
+     ORDER BY c.fecha_apertura DESC
+     LIMIT 1`
+  )
+  if (result.rows.length === 0) return null
+
+  const caja = result.rows[0]
+  const efectivoEsperado = parseFloat(caja.monto_inicial) +
+    parseFloat(caja.ventas_efectivo) -
+    parseFloat(caja.retiros) -
+    parseFloat(caja.gastos)
+
+  return {
+    ...caja,
+    efectivo_esperado: efectivoEsperado,
+    ventas_efectivo: parseFloat(caja.ventas_efectivo),
+    ventas_tarjeta: parseFloat(caja.ventas_tarjeta),
+    ventas_sinpe: parseFloat(caja.ventas_sinpe),
+    retiros: parseFloat(caja.retiros),
+    gastos: parseFloat(caja.gastos)
+  }
+}
+
+async function registerCashMovement(cajaId, tipo, monto, descripcion) {
+  const result = await pool.query(
+    'INSERT INTO movimientos_caja (caja_id, tipo, monto, descripcion) VALUES ($1, $2, $3, $4) RETURNING *',
+    [cajaId, tipo, parseFloat(monto), descripcion]
+  )
+  return result.rows[0]
+}
+
+async function closeCashRegister(cajaId, efectivoReal, pagosTarjeta, pagosSinpe, notas) {
+  const caja = await getCurrentCashRegister()
+
+  if (!caja || caja.id !== cajaId) {
+    throw new Error('Caja no encontrada o ya está cerrada')
+  }
+
+  const ventasEfectivo = parseFloat(caja.ventas_efectivo)
+  const retiros = parseFloat(caja.retiros)
+  const gastos = parseFloat(caja.gastos)
+  const montoInicial = parseFloat(caja.monto_inicial)
+
+  const efectivoEsperado = montoInicial + ventasEfectivo - retiros - gastos
+  const diferencia = parseFloat(efectivoReal) - efectivoEsperado
+
+  if (Math.abs(diferencia) > 0.01) {
+    throw new Error(`Diferencia en caja detectada: ${diferencia.toFixed(2)}. No se puede cerrar.`)
+  }
+
+  const montoCierre = parseFloat(efectivoReal) + parseFloat(pagosTarjeta) + parseFloat(pagosSinpe)
+
+  const result = await pool.query(
+    `UPDATE cajas
+     SET estado = 'cerrada',
+         monto_cierre = $1,
+         efectivo_real = $2,
+         efectivo_esperado = $3,
+         diferencia = $4,
+         fecha_cierre = NOW(),
+         notas = $5
+     WHERE id = $6
+     RETURNING *`,
+    [montoCierre, parseFloat(efectivoReal), efectivoEsperado, diferencia, notas, cajaId]
+  )
+
+  return result.rows[0]
+}
+
+async function getCashRegisterHistory() {
+  const result = await pool.query(
+    'SELECT * FROM cajas WHERE estado = $1 ORDER BY fecha_cierre DESC',
+    ['cerrada']
+  )
+  return result.rows.map(caja => ({
+    ...caja,
+    monto_inicial: parseFloat(caja.monto_inicial),
+    monto_cierre: parseFloat(caja.monto_cierre),
+    efectivo_esperado: parseFloat(caja.efectivo_esperado),
+    efectivo_real: parseFloat(caja.efectivo_real),
+    diferencia: parseFloat(caja.diferencia)
+  }))
 }
 
 function serveStaticFile(filePath, res) {
@@ -522,6 +654,91 @@ const server = http.createServer(async (req, res) => {
         res.end(JSON.stringify({ error: err.message }))
       }
     })
+    return
+  }
+
+  // POST /api/cash-register/open
+  if (req.url === '/api/cash-register/open' && req.method === 'POST') {
+    let body = ''
+    req.on('data', chunk => { body += chunk.toString() })
+    req.on('end', async () => {
+      try {
+        const { montoInicial } = JSON.parse(body)
+        const caja = await openCashRegister(montoInicial)
+        res.writeHead(201)
+        res.end(JSON.stringify(caja))
+      } catch (err) {
+        console.error('POST /api/cash-register/open error:', err.message)
+        res.writeHead(400)
+        res.end(JSON.stringify({ error: err.message }))
+      }
+    })
+    return
+  }
+
+  // GET /api/cash-register/current
+  if (req.url === '/api/cash-register/current' && req.method === 'GET') {
+    try {
+      const caja = await getCurrentCashRegister()
+      res.writeHead(200)
+      res.end(JSON.stringify(caja || {}))
+    } catch (err) {
+      console.error('GET /api/cash-register/current error:', err.message)
+      res.writeHead(500)
+      res.end(JSON.stringify({ error: err.message }))
+    }
+    return
+  }
+
+  // POST /api/cash-register/movement
+  if (req.url === '/api/cash-register/movement' && req.method === 'POST') {
+    let body = ''
+    req.on('data', chunk => { body += chunk.toString() })
+    req.on('end', async () => {
+      try {
+        const { cajaId, tipo, monto, descripcion } = JSON.parse(body)
+        const movimiento = await registerCashMovement(cajaId, tipo, monto, descripcion)
+        res.writeHead(201)
+        res.end(JSON.stringify(movimiento))
+      } catch (err) {
+        console.error('POST /api/cash-register/movement error:', err.message)
+        res.writeHead(400)
+        res.end(JSON.stringify({ error: err.message }))
+      }
+    })
+    return
+  }
+
+  // POST /api/cash-register/close
+  if (req.url === '/api/cash-register/close' && req.method === 'POST') {
+    let body = ''
+    req.on('data', chunk => { body += chunk.toString() })
+    req.on('end', async () => {
+      try {
+        const { cajaId, efectivoReal, pagosTarjeta, pagosSinpe, notas } = JSON.parse(body)
+        const cajaClosing = await closeCashRegister(cajaId, efectivoReal, pagosTarjeta, pagosSinpe, notas)
+        res.writeHead(200)
+        res.end(JSON.stringify(cajaClosing))
+      } catch (err) {
+        console.error('POST /api/cash-register/close error:', err.message)
+        res.writeHead(400)
+        res.end(JSON.stringify({ error: err.message }))
+      }
+    })
+    return
+  }
+
+  // GET /api/cash-register/history
+  if (req.url === '/api/cash-register/history' && req.method === 'GET') {
+    try {
+      const history = await getCashRegisterHistory()
+      res.writeHead(200)
+      res.end(JSON.stringify(history))
+    } catch (err) {
+      console.error('GET /api/cash-register/history error:', err.message)
+      res.writeHead(500)
+      res.end(JSON.stringify({ error: err.message }))
+    }
     return
   }
 

@@ -1124,6 +1124,223 @@ body {
   }
 }
 
+/* Cash Register Styles */
+.btn-cash-register {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-cash-register:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-cash-register.active {
+  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+}
+
+.cash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.cash-item {
+  background: linear-gradient(135deg, rgba(33, 150, 243, 0.1), rgba(25, 118, 210, 0.1));
+  border: 2px solid rgba(33, 150, 243, 0.3);
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.cash-item label {
+  display: block;
+  font-weight: bold;
+  color: #666;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.cash-item .value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2196F3;
+}
+
+.cash-item.green {
+  border-color: rgba(76, 175, 80, 0.3);
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(56, 142, 60, 0.1));
+}
+
+.cash-item.green .value {
+  color: #4CAF50;
+}
+
+.cash-item.red {
+  border-color: rgba(244, 67, 54, 0.3);
+  background: linear-gradient(135deg, rgba(244, 67, 54, 0.1), rgba(211, 47, 47, 0.1));
+}
+
+.cash-item.red .value {
+  color: #F44336;
+}
+
+.cash-item.blue {
+  border-color: rgba(33, 150, 243, 0.5);
+  background: linear-gradient(135deg, rgba(33, 150, 243, 0.15), rgba(25, 118, 210, 0.15));
+}
+
+.cash-item.blue .value {
+  color: #2196F3;
+}
+
+.cash-info {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  border-left: 4px solid #2196F3;
+}
+
+.cash-info p {
+  margin: 0.5rem 0;
+  color: #333;
+}
+
+.cash-info strong {
+  color: #1976D2;
+}
+
+.green {
+  color: #4CAF50;
+}
+
+.red {
+  color: #F44336;
+}
+
+.cash-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cash-table thead {
+  background: #2196F3;
+  color: white;
+}
+
+.cash-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: bold;
+}
+
+.cash-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.cash-table tbody tr:hover {
+  background: #f5f5f5;
+}
+
+.modal-content.large {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.btn-success {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-info {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #00BCD4 0%, #0097A7 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-info:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  padding: 0.75rem 1.5rem;
+  background: #666;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #555;
+}
+
+.error-message {
+  background: #ffebee;
+  color: #c62828;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+  border-left: 4px solid #F44336;
+}
+
 @media (max-width: 768px) {
   .header h1 {
     font-size: 1.5rem;
@@ -1143,5 +1360,24 @@ body {
 
   .cart-item {
     flex-wrap: wrap;
+  }
+
+  .cash-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+  }
+
+  .modal-content {
+    width: 90%;
+    max-height: 70vh;
+  }
+
+  .cash-table {
+    font-size: 0.85rem;
+  }
+
+  .cash-table th,
+  .cash-table td {
+    padding: 0.5rem;
   }
 }

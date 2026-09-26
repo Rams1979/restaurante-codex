@@ -8,6 +8,10 @@ import ClientRegistration from './components/ClientRegistration'
 import ClientSelector from './components/ClientSelector'
 import ProductsManager from './components/ProductsManager'
 import RecipesManager from './components/RecipesManager'
+import OpenCashRegister from './components/OpenCashRegister'
+import CashRegisterDashboard from './components/CashRegisterDashboard'
+import CloseCashRegister from './components/CloseCashRegister'
+import CashRegisterHistory from './components/CashRegisterHistory'
 import './App.css'
 
 function App() {
@@ -23,6 +27,11 @@ function App() {
   const [selectedClient, setSelectedClient] = useState({})
   const [showProductsManager, setShowProductsManager] = useState(false)
   const [showRecipesManager, setShowRecipesManager] = useState(false)
+  const [showOpenCash, setShowOpenCash] = useState(false)
+  const [showCashDashboard, setShowCashDashboard] = useState(false)
+  const [showCloseCash, setShowCloseCash] = useState(false)
+  const [showCashHistory, setShowCashHistory] = useState(false)
+  const [currentCaja, setCurrentCaja] = useState(null)
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -37,6 +46,21 @@ function App() {
       }
     }
     loadProducts()
+
+    const loadCurrentCaja = async () => {
+      try {
+        const response = await fetch('/api/cash-register/current')
+        if (response.ok) {
+          const data = await response.json()
+          if (data && data.id) {
+            setCurrentCaja(data)
+          }
+        }
+      } catch (err) {
+        console.error('Error loading cash register:', err)
+      }
+    }
+    loadCurrentCaja()
   }, [])
 
   const handleFileUpload = (uploadedProducts) => {
@@ -65,6 +89,18 @@ function App() {
 
   const handleBackToTables = () => {
     setSelectedTable(null)
+  }
+
+  const handleOpenCash = (caja) => {
+    setCurrentCaja(caja)
+    setShowOpenCash(false)
+    setShowCashDashboard(true)
+  }
+
+  const handleCloseCashSuccess = (caja) => {
+    setShowCloseCash(false)
+    setShowCashDashboard(false)
+    setCurrentCaja(null)
   }
 
   const filteredProducts = products.filter(p =>
@@ -221,6 +257,34 @@ function App() {
         <RecipesManager onClose={() => setShowRecipesManager(false)} />
       )}
 
+      {showOpenCash && (
+        <OpenCashRegister
+          onCashOpened={handleOpenCash}
+          onCancel={() => setShowOpenCash(false)}
+        />
+      )}
+
+      {showCashDashboard && currentCaja && (
+        <CashRegisterDashboard
+          caja={currentCaja}
+          onClose={() => setShowCashDashboard(false)}
+          onShowCloseCash={() => setShowCloseCash(true)}
+          onShowHistory={() => setShowCashHistory(true)}
+        />
+      )}
+
+      {showCloseCash && currentCaja && (
+        <CloseCashRegister
+          caja={currentCaja}
+          onClosed={handleCloseCashSuccess}
+          onCancel={() => setShowCloseCash(false)}
+        />
+      )}
+
+      {showCashHistory && (
+        <CashRegisterHistory onClose={() => setShowCashHistory(false)} />
+      )}
+
       <div className="container">
         {!selectedTable ? (
           <>
@@ -238,6 +302,23 @@ function App() {
               >
                 ➕ Nuevo Cliente
               </button>
+              {!currentCaja ? (
+                <button
+                  className="btn-cash-register"
+                  onClick={() => setShowOpenCash(true)}
+                  title="Abrir caja de pago"
+                >
+                  🏪 Abrir Caja
+                </button>
+              ) : (
+                <button
+                  className="btn-cash-register active"
+                  onClick={() => setShowCashDashboard(true)}
+                  title="Ver estado de caja"
+                >
+                  💰 Caja Abierta (#{currentCaja.id})
+                </button>
+              )}
             </div>
             <TableSelector
               onSelectTable={handleSelectTable}
