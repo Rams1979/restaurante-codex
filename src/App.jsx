@@ -103,7 +103,16 @@ function App() {
     setCurrentCaja(null)
   }
 
-  const filteredProducts = products.filter(p =>
+  const parseProduct = (product) => ({
+    ...product,
+    precio: parseFloat(product.precio),
+    promoPrecio: product.promoPrecio ? parseFloat(product.promoPrecio) : null,
+    inventario: parseInt(product.inventario) || 0
+  })
+
+  const parsedProducts = products.map(parseProduct)
+
+  const filteredProducts = parsedProducts.filter(p =>
     p.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
   )
