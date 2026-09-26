@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npx vite build",
+    "build": "vite build",
     "preview": "vite preview",
-    "start": "npm run build && node api-server.js"
+    "start": "node api-server.js"
   },
   "dependencies": {
     "pg": "^8.11.0",
