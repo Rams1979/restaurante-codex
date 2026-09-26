@@ -116,3 +116,131 @@ export async function generateCashClosureReport(cajaData) {
   const filename = `Cierre_Caja_${cajaData.id}_${new Date().getTime()}.pdf`
   doc.save(filename)
 }
+
+export function generateReceiptPDF(saleData) {
+  const doc = new jsPDF()
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const pageHeight = doc.internal.pageSize.getHeight()
+  let yPos = 10
+
+  // Header
+  doc.setFontSize(18)
+  doc.setFont(undefined, 'bold')
+  doc.text('RESTAURANTE CODEX', pageWidth / 2, yPos, { align: 'center' })
+  yPos += 8
+
+  doc.setFontSize(11)
+  doc.setFont(undefined, 'normal')
+  doc.text('TICKET DE VENTA', pageWidth / 2, yPos, { align: 'center' })
+  yPos += 10
+
+  // Info de la venta
+  doc.setFontSize(10)
+  const timestamp = new Date()
+  doc.text(`Fecha: ${timestamp.toLocaleDateString('es-ES')}`, 15, yPos)
+  yPos += 5
+  doc.text(`Hora: ${timestamp.toLocaleTimeString('es-ES')}`, 15, yPos)
+  yPos += 5
+  doc.text(`Lugar: ${saleData.tableInfo}`, 15, yPos)
+  yPos += 7
+
+  // Info del cliente si existe
+  if (saleData.clientInfo?.nombre && !saleData.clientInfo?.isContado) {
+    doc.setFont(undefined, 'bold')
+    doc.text('CLIENTE:', 15, yPos)
+    doc.setFont(undefined, 'normal')
+    yPos += 5
+    doc.text(saleData.clientInfo.nombre, 20, yPos)
+    if (saleData.clientInfo.celular) {
+      yPos += 5
+      doc.text(`Tel: ${saleData.clientInfo.celular}`, 20, yPos)
+    }
+    yPos += 7
+  }
+
+  // Línea separadora
+  doc.setDrawColor(0)
+  doc.line(15, yPos, pageWidth - 15, yPos)
+  yPos += 5
+
+  // Items
+  doc.setFont(undefined, 'bold')
+  doc.setFontSize(9)
+  doc.text('DESCRIPCIÓN', 15, yPos)
+  doc.text('CANT', 110, yPos)
+  doc.text('PRECIO', 140, yPos)
+  doc.text('SUBTOTAL', 170, yPos)
+  yPos += 5
+
+  doc.setDrawColor(200)
+  doc.line(15, yPos, pageWidth - 15, yPos)
+  yPos += 4
+
+  doc.setFont(undefined, 'normal')
+  saleData.items.forEach(item => {
+    const itemPrice = item.isPromo ? item.promoPrecio : item.precio
+    const itemTotal = itemPrice * item.cantidad
+    const desc = item.isPromo ? `${item.promoNombre}` : item.descripcion
+
+    // Truncar descripción si es muy larga
+    const maxDescWidth = 90
+    const descLines = doc.splitTextToSize(desc, maxDescWidth)
+
+    descLines.forEach((line, idx) => {
+      doc.text(line, 15, yPos, { maxWidth: maxDescWidth })
+      if (idx === 0) {
+        doc.text(item.cantidad.toString(), 115, yPos)
+        doc.text(`₡${itemPrice.toFixed(2)}`, 145, yPos)
+        doc.text(`₡${itemTotal.toFixed(2)}`, 175, yPos)
+      }
+      yPos += 4
+    })
+  })
+
+  // Línea separadora
+  doc.setDrawColor(0)
+  doc.line(15, yPos, pageWidth - 15, yPos)
+  yPos += 4
+
+  // Resumen
+  doc.setFontSize(10)
+  doc.text('Subtotal:', 120, yPos)
+  doc.text(`₡${saleData.subtotal.toFixed(2)}`, 170, yPos)
+  yPos += 5
+
+  if (saleData.descuentoPorcentaje > 0) {
+    doc.text(`Descuento (${saleData.descuentoPorcentaje}%):`, 120, yPos)
+    doc.text(`-₡${saleData.descuento.toFixed(2)}`, 170, yPos)
+    yPos += 5
+  }
+
+  doc.text('Impuesto (13%):', 120, yPos)
+  doc.text(`₡${saleData.impuesto.toFixed(2)}`, 170, yPos)
+  yPos += 5
+
+  if (saleData.servicio > 0) {
+    doc.text('Servicio (10%):', 120, yPos)
+    doc.text(`₡${saleData.servicio.toFixed(2)}`, 170, yPos)
+    yPos += 5
+  }
+
+  // Total
+  doc.setFont(undefined, 'bold')
+  doc.setFontSize(12)
+  doc.line(120, yPos, pageWidth - 15, yPos)
+  yPos += 5
+  doc.text('TOTAL:', 120, yPos)
+  doc.text(`₡${saleData.total.toFixed(2)}`, 170, yPos)
+  yPos += 8
+
+  // Footer
+  doc.setFont(undefined, 'normal')
+  doc.setFontSize(9)
+  doc.setTextColor(128, 128, 128)
+  doc.text('¡Gracias por su compra!', pageWidth / 2, pageHeight - 15, { align: 'center' })
+  doc.text(`#${new Date().getTime()}`, pageWidth / 2, pageHeight - 10, { align: 'center' })
+
+  // Download
+  const filename = `Comprobante_${new Date().getTime()}.pdf`
+  doc.save(filename)
+}

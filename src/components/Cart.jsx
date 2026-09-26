@@ -1,3 +1,5 @@
+import { generateReceiptPDF } from '../utils/reportGenerator'
+
 function Cart({ items, tableInfo, locationType, clientInfo, onRemove, onUpdateQuantity, onClear }) {
   console.log('Cart items recibidos:', items)
   const subtotal = items.reduce((sum, item) => {
@@ -41,6 +43,21 @@ function Cart({ items, tableInfo, locationType, clientInfo, onRemove, onUpdateQu
 
   const handleCloseSale = async () => {
     await updateInventory()
+
+    // Generar comprobante PDF
+    const saleData = {
+      items,
+      tableInfo,
+      clientInfo,
+      subtotal,
+      descuentoPorcentaje,
+      descuento,
+      impuesto,
+      servicio,
+      total
+    }
+    generateReceiptPDF(saleData)
+
     alert(`✅ Orden de ${tableInfo} cobrada por ₡${total.toFixed(2)}`)
     onClear()
   }
