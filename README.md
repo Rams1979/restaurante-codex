@@ -1,10 +1,10 @@
-# 🍽️ Restaurante Codex - Sistema POS v2.3
+# 🍽️ Restaurante Codex - Sistema POS v2.4
 
-**Sistema de Punto de Venta (POS) moderno para restaurantes** deployado en la nube con PostgreSQL, gestión completa de inventario con rebajo automático, clientes, facturación y control de productos activos/inactivos.
+**Sistema de Punto de Venta (POS) moderno para restaurantes** deployado en la nube con PostgreSQL, gestión completa de inventario, clientes, facturación, sistema de caja avanzado con cierre automático, y generación de reportes PDF.
 
-**Versión**: 2.3.0  
-**Estado**: ✅ Producción - Sistema en internet con PostgreSQL, rebajo automático de inventario, deploy en Railway  
-**Última actualización**: 12 de Septiembre de 2026  
+**Versión**: 2.4.0  
+**Estado**: ✅ Producción - Sistema completo en internet con PostgreSQL, caja avanzada, reportes PDF, deploy en Railway  
+**Última actualización**: 26 de Septiembre de 2026  
 **GitHub**: Lee `GITHUB_SETUP.md` para sincronizar entre 2 computadoras  
 **🌐 URL Pública**: https://restaurante-codex-production.up.railway.app
 
@@ -34,7 +34,25 @@
 - **Servicio**: 10% (solo mesas, no incluido en barra)
 - **Descuentos Automáticos**: Aplicados según perfil del cliente
 - **Ticket de Venta**: Formato térmico con fecha, hora, detalles
+- **Comprobante PDF Automático**: Generación automática al cobrar
 - **Moneda**: Colones Costarricenses (₡)
+
+### 💰 Sistema Avanzado de Caja
+- **Apertura de Caja**: Ingreso de monto inicial de efectivo
+- **Dashboard en Tiempo Real**: Visualización de estado actual (ventas, retiros, gastos)
+- **Movimientos de Caja**: Registro de ventas por método (efectivo, tarjeta, SINPE)
+- **Validación Automática**: Cálculo automático de efectivo esperado
+- **Cierre Seguro**: Solo cierra si el efectivo contado = efectivo esperado
+- **Arqueo Parcial**: Consulta sin cerrar caja
+- **Reporte PDF Automático**: Generación de reporte al cierre
+- **Historial Auditable**: Registro completo de todas las cajas cerradas
+- **Diferencias Detectadas**: Alerta si hay faltante o sobrante
+
+### 📄 Reportes y Comprobantes
+- **Comprobante de Venta**: PDF automático al cobrar con detalles completos
+- **Reporte de Cierre de Caja**: PDF con información financiera del día
+- **Detalles en PDF**: Items, precios, descuentos, impuestos, total
+- **Descarga Automática**: Se guarda en descargas sin intervención del usuario
 
 ### 🎨 Interfaz de Usuario
 - **Responsive**: Funciona en desktop, tablet y móvil
@@ -219,6 +237,70 @@ Si tienes archivos antiguos:
 └── Clic en "📦 Gestionar Productos" para guardar en BD
 ```
 
+### 7️⃣ Sistema de Caja (NUEVO)
+
+#### Abrir Caja
+```
+Clic en "🏪 Abrir Caja":
+├── Ingresa monto inicial en efectivo
+├── Clic en "Abrir Caja"
+└── Caja #ID abierta y lista para ventas
+```
+
+#### Ver Estado de Caja
+```
+Clic en "💰 Caja Abierta (#ID)":
+├── Dashboard mostrando:
+│   ├── Monto inicial
+│   ├── Ventas por método (efectivo, tarjeta, SINPE)
+│   ├── Retiros y gastos
+│   └── Efectivo esperado (calculado automáticamente)
+├── Botones:
+│   ├── 💰 Cerrar Caja
+│   ├── 📄 Generar Reporte
+│   └── 📋 Historial
+```
+
+#### Cobrar y Generar Comprobante
+```
+Al hacer clic en "💰 Cobrar":
+1. Sistema actualiza inventario automáticamente
+2. Genera PDF de comprobante con:
+   ├── Datos del restaurante
+   ├── Fecha y hora
+   ├── Cliente (si aplica)
+   ├── Todos los items con cantidad y precio
+   ├── Descuentos, impuestos y servicio
+   └── Total final
+3. Se descarga automáticamente
+4. Orden se limpia y lista para nueva venta
+```
+
+#### Cerrar Caja
+```
+Clic en "💰 Cerrar Caja":
+├── Ingresa efectivo contado (obligatorio)
+├── Ingresa pagos tarjeta (opcional)
+├── Ingresa pagos SINPE (opcional)
+├── Agrega notas (opcional)
+├── Sistema valida: efectivo = efectivo esperado
+├── Si diferencia = 0:
+│   ├── Genera PDF de reporte de cierre
+│   ├── Cierra caja automáticamente
+│   └── Registra en historial
+└── Si diferencia ≠ 0:
+    └── Bloquea cierre y muestra diferencia
+```
+
+#### Ver Historial
+```
+Clic en "📋 Historial":
+├── Tabla con todas las cajas cerradas
+├── Columnas: ID, fechas, montos, diferencia
+├── Color verde: diferencia = 0 (correcto)
+├── Color rojo: diferencia ≠ 0 (revisión necesaria)
+```
+
 ---
 
 ## 📊 Ejemplos de Cálculo
@@ -329,6 +411,30 @@ TOTAL:             ₡7,910.00
 | `precio` | REAL | Precio unitario |
 | `isPromo` | INT | Es promoción? |
 
+#### `cajas` (NUEVO)
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | SERIAL PK | ID único de caja |
+| `monto_inicial` | DECIMAL | Efectivo inicial |
+| `monto_cierre` | DECIMAL | Efectivo + tarjeta + SINPE |
+| `efectivo_esperado` | DECIMAL | Calculado automáticamente |
+| `efectivo_real` | DECIMAL | Efectivo contado |
+| `diferencia` | DECIMAL | efectivo_real - efectivo_esperado |
+| `estado` | VARCHAR | 'abierta' o 'cerrada' |
+| `fecha_apertura` | TIMESTAMP | Fecha/hora de apertura |
+| `fecha_cierre` | TIMESTAMP | Fecha/hora de cierre |
+| `notas` | TEXT | Notas del cierre |
+
+#### `movimientos_caja` (NUEVO)
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | SERIAL PK | ID único |
+| `caja_id` | INT FK | Caja asociada |
+| `tipo` | VARCHAR | venta_efectivo/venta_tarjeta/venta_sinpe/retiro/gasto |
+| `monto` | DECIMAL | Monto del movimiento |
+| `descripcion` | TEXT | Detalle del movimiento |
+| `fecha` | TIMESTAMP | Fecha/hora del movimiento |
+
 ---
 
 ## 🔌 API REST
@@ -366,6 +472,15 @@ PUT    /api/clients/:id           # Actualizar
 #### Inventario
 ```
 POST   /api/inventory             # Actualizar inventario (rebajo automático)
+```
+
+#### Caja (NUEVO)
+```
+POST   /api/cash-register/open              # Abrir caja con monto inicial
+GET    /api/cash-register/current           # Obtener estado actual
+POST   /api/cash-register/movement          # Registrar movimiento (venta/retiro/gasto)
+POST   /api/cash-register/close             # Cerrar caja con validación
+GET    /api/cash-register/history           # Obtener historial de cajas cerradas
 ```
 
 ### Ejemplo: Agregar Producto
@@ -558,6 +673,38 @@ Proyecto desarrollado para **Restaurante Codex**.
 ---
 
 ## 📋 Changelog
+
+### v2.4.0 (26 Septiembre 2026)
+✅ **Sistema Avanzado de Caja de Pago**
+- Apertura de caja con monto inicial
+- Dashboard con estado en tiempo real (ventas, retiros, gastos)
+- Cierre con validación automática de cuadre
+- Archiveo parcial sin cerrar
+- Historial auditable de cajas cerradas
+
+✅ **Generación Automática de PDF**
+- Comprobante PDF al cobrar (con detalles completos)
+- Reporte PDF al cierre de caja
+- Información financiera, cliente, items, totales
+- Descarga automática sin intervención del usuario
+
+✅ **Base de Datos PostgreSQL**
+- Tablas cajas y movimientos_caja
+- 6 nuevos endpoints REST (/api/cash-register/*)
+- Cálculo automático de efectivo esperado
+- Validación de cuadre (diferencia = 0)
+
+✅ **Componentes React Nuevos**
+- OpenCashRegister.jsx (modal de apertura)
+- CashRegisterDashboard.jsx (dashboard en tiempo real)
+- CloseCashRegister.jsx (cierre con validación)
+- CashRegisterHistory.jsx (tabla de historial)
+- reportGenerator.js (generación de PDFs)
+
+✅ **Correción de Bugs**
+- Parser de precios para evitar error toFixed()
+- Integración correcta de jsPDF
+- Estilos responsivos para modal de caja
 
 ### v2.3.0 (12 Septiembre 2026)
 ✅ **🌐 Deploy exitoso en Railway** - Aplicación disponible en internet  
