@@ -15,7 +15,7 @@ Sincronizar el proyecto entre 2 computadoras usando GitHub
 
 ### 1.2 Crear el repositorio
 - **Nombre del repositorio**: `restaurante-codex` (o el que prefieras)
-- **Descripción**: "Sistema POS para Restaurante Codex con SQLite, React y Node.js"
+- **Descripción**: "Sistema POS para Restaurante Codex con PostgreSQL, React y Node.js"
 - **Privado o Público**: Elige **Privado** (solo tú y tu equipo)
 - **NO inicialices con README** (ya tenemos archivos)
 - Haz clic en **Create repository**
@@ -69,10 +69,11 @@ cd codex-pos
 # Instalar dependencias
 npm install
 
-# Crear base de datos (si no existe)
-node db-init.js
+# Configurar DATABASE_URL (PostgreSQL) en un archivo .env
+# Las tablas se crean automáticamente al iniciar el servidor
 
-# Iniciar la aplicación
+# Iniciar el API server (puerto 3003) y, en otra terminal, el frontend
+node api-server.js
 npm run dev
 ```
 

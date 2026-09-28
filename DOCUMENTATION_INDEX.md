@@ -1,6 +1,8 @@
 # 📚 Índice de Documentación
 
-**Restaurante Codex v2.0** - Documentación Completa
+**Restaurante Codex v2.4** - Documentación Completa
+
+> ⚠️ El sistema migró de SQLite a **PostgreSQL** en la v2.3.0 (deploy en Railway). Los documentos **MIGRATION_GUIDE.md** y **SQLITE_MIGRATION.md** describen la arquitectura anterior y se conservan solo como referencia histórica — no reflejan cómo funciona el sistema hoy. Para la configuración actual, usa **README.md** y **API_DOCUMENTATION.md**.
 
 ---
 
@@ -33,8 +35,8 @@
 
 ---
 
-### 2. **[MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)** - Guía de Migración
-**Para**: Usuarios que vienen de v1.x
+### 2. **[MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)** - Guía de Migración (histórica, v1.x → v2.0/SQLite)
+**Para**: Referencia histórica únicamente — la migración real a producción hoy es PostgreSQL/Railway, no SQLite
 
 **Contenido**:
 - ✅ Qué cambió en v2.0
@@ -70,19 +72,10 @@
 
 ---
 
-### 4. **[SQLITE_MIGRATION.md](SQLITE_MIGRATION.md)** - Migración a SQLite
-**Para**: Administradores de base de datos
+### 4. **[SQLITE_MIGRATION.md](SQLITE_MIGRATION.md)** - Migración a SQLite (histórica, obsoleta)
+**Para**: Referencia histórica — describe la arquitectura de la v2.0, **reemplazada por PostgreSQL** desde la v2.3.0
 
-**Contenido**:
-- ✅ Resumen de cambios
-- ✅ Dependencias nuevas
-- ✅ Esquema de base de datos
-- ✅ Endpoints mantenidos
-- ✅ Mejoras incluidas
-- ✅ Configuración WAL
-- ✅ Backup
-
-**Leer si**: Necesitas administrar la base de datos
+**Leer si**: Quieres entender la evolución del proyecto. Para administrar la base de datos actual, usa `psql "$DATABASE_URL"` (ver README.md → Solución de Problemas)
 
 ---
 
@@ -90,13 +83,8 @@
 
 ### "Quiero instalar y usar el sistema"
 1. Leer: **[README.md](README.md)** - Sección Instalación
-2. Ejecutar: `node db-init.js && npm run dev`
+2. Configurar `DATABASE_URL` (PostgreSQL) y ejecutar: `npm install && npm run dev`
 3. Acceder: http://localhost:3000
-
-### "Vengo de v1.x y quiero actualizar"
-1. Leer: **[MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)** completamente
-2. Ejecutar: `node migrate-all.js`
-3. Verificar: Checklist en MIGRATION_GUIDE.md
 
 ### "Quiero integrar con la API REST"
 1. Leer: **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - Sección relevante
@@ -104,14 +92,15 @@
 3. Integrar: Usar en tu aplicación
 
 ### "Necesito administrar la base de datos"
-1. Leer: **[SQLITE_MIGRATION.md](SQLITE_MIGRATION.md)**
-2. Usar: `sqlite3 codex.db` para conectar
-3. Consultar: Ver ejemplos en README.md - Sección Debug
+1. Usar: `psql "$DATABASE_URL"` para conectar a PostgreSQL
+2. Consultar: Ver ejemplos en README.md - Sección "Logs y Debug"
 
 ### "Tengo un problema"
 1. Revisar: **[README.md](README.md)** - Solución de Problemas
-2. Consultar: **[MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)** - Problemas Comunes
-3. Contactar: Incluir logs y describir el error
+2. Contactar: Incluir logs y describir el error
+
+### "Quiero entender cómo era el sistema antes de PostgreSQL"
+1. Leer (histórico): **[MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)** y **[SQLITE_MIGRATION.md](SQLITE_MIGRATION.md)**
 
 ---
 
@@ -120,15 +109,11 @@
 ```
 documentación/
 ├── README.md                    ← COMIENZA AQUÍ
-├── MIGRATION_GUIDE.md          ← Si vienes de v1.x
-├── API_DOCUMENTATION.md        ← Para desarrolladores
-├── SQLITE_MIGRATION.md         ← Detalles de BD
-├── DOCUMENTATION_INDEX.md      ← Este archivo
-└── scripts/
-    ├── db-init.js              ← Crear BD
-    ├── migrate-all.js          ← Migrar todo
-    ├── migrate-excel-to-sqlite.js
-    └── migrate-clientes-to-sqlite.js
+├── API_DOCUMENTATION.md         ← Para desarrolladores (endpoints REST)
+├── DOCUMENTATION_INDEX.md       ← Este archivo
+├── GITHUB_SETUP.md              ← Sincronizar entre computadoras
+├── MIGRATION_GUIDE.md           ← Histórico (v1.x → v2.0/SQLite, obsoleto)
+└── SQLITE_MIGRATION.md          ← Histórico (detalles de la BD SQLite, obsoleto)
 ```
 
 ---
@@ -140,23 +125,21 @@ documentación/
 # 1. Instalar dependencias
 npm install
 
-# 2. Crear base de datos
-node db-init.js
+# 2. Configurar DATABASE_URL apuntando a PostgreSQL (local o Railway)
+#    Las tablas se crean automáticamente al iniciar api-server.js
 
-# 3. Migrar datos (si vienes de v1.x)
-node migrate-all.js
-
-# 4. Iniciar aplicación
-npm run dev
+# 3. Iniciar API server + frontend
+node api-server.js   # en una terminal (puerto 3003)
+npm run dev           # en otra terminal (puerto 3000)
 ```
 
-### Base de Datos
+### Base de Datos (PostgreSQL)
 ```bash
-# Conectar a SQLite
-sqlite3 codex.db
+# Conectar
+psql "$DATABASE_URL"
 
-# Ver estructura
-.schema
+# Ver tablas
+\dt
 
 # Ver clientes
 SELECT * FROM clientes;
@@ -173,22 +156,22 @@ SELECT COUNT(*) FROM productos;
 SELECT COUNT(*) FROM recetas;
 
 # Salir
-.quit
+\q
 ```
 
 ### API Testing
 ```bash
 # Ver todos los clientes
-curl http://localhost:3002/api/clients
+curl http://localhost:3003/api/clients
 
 # Ver todos los productos
-curl http://localhost:3002/api/products
+curl http://localhost:3003/api/products
 
 # Ver todas las recetas
-curl http://localhost:3002/api/recipes
+curl http://localhost:3003/api/recipes
 
 # Crear cliente
-curl -X POST http://localhost:3002/api/clients \
+curl -X POST http://localhost:3003/api/clients \
   -H "Content-Type: application/json" \
   -d '{"nombre":"Test","celular":"123","edad":"30","correo":"test@test.com"}'
 ```
@@ -228,28 +211,28 @@ curl -X POST http://localhost:3002/api/clients \
 
 ## 🎓 Conceptos Clave
 
-### SQLite
-- Base de datos SQL embebida
-- Un archivo `codex.db` contiene todo
-- WAL mode: mejor concurrencia
-- Prepared statements: seguridad
+### PostgreSQL
+- Base de datos relacional en la nube (Railway)
+- Conexión vía `DATABASE_URL` con el driver `pg`
+- Tablas auto-creadas al iniciar `api-server.js`
+- Prepared statements (`$1, $2...`): seguridad
 
 ### API REST
-- Endpoints `/api/products`, `/api/recipes`, `/api/clients`
+- Endpoints `/api/products`, `/api/recipes`, `/api/clients`, `/api/inventory`, `/api/cash-register/*`
 - Métodos: GET, POST, PUT, DELETE
 - Responses en JSON
-- CORS habilitado
+- CORS habilitado para cualquier origen
 
 ### Gestores CRUD
-- **Productos Manager** (📦): Agregar, editar, eliminar productos
+- **Productos Manager** (📦): Agregar, editar, inactivar productos
 - **Recipes Manager** (🍹): Agregar, editar, eliminar recetas
+- **Sistema de Caja** (💰): Apertura, dashboard, cierre validado, historial
 - Cambios en tiempo real
 - Validación servidor
 
-### Migración
-- Script `migrate-all.js` importa datos automáticamente
-- Soporta Excel (.xlsx) y texto (.txt)
-- Validación y transformación de datos
+### Carga de Datos
+- Botón "📁 Cargar Excel" en la app lee productos desde `.xlsx` en el navegador
+- Los scripts `migrate-*.js` (SQLite) están obsoletos, no se usan hoy
 
 ---
 
@@ -257,30 +240,28 @@ curl -X POST http://localhost:3002/api/clients \
 
 **Documentación**:
 - 📖 [README](README.md) - Guía principal
-- 🔄 [Migración](MIGRATION_GUIDE.md) - Guía de actualización
 - 🔌 [API](API_DOCUMENTATION.md) - Referencia técnica
-- 🗄️ [SQLite](SQLITE_MIGRATION.md) - Detalles BD
+- 🔄 [Migración histórica](MIGRATION_GUIDE.md) - Solo referencia (obsoleta)
 
 **Scripts**:
-- 🔧 `db-init.js` - Inicializar BD
-- 📦 `migrate-all.js` - Migrar datos
-- 🌐 `api-server.js` - Servidor REST
+- 🌐 `api-server.js` - Servidor REST + inicialización de BD PostgreSQL
+- 📄 `reportGenerator` (dentro de `src/`) - Generación de PDFs de comprobante/cierre
 
 **URLs**:
-- 🖥️ App: http://localhost:3000
-- 🔌 API: http://localhost:3002
+- 🖥️ App (dev): http://localhost:3000
+- 🔌 API (dev): http://localhost:3003
+- 🌐 Producción: https://restaurante-codex-production.up.railway.app
 
 ---
 
 ## ✅ Checklist de Documentación
 
 - ✅ README principal completo
-- ✅ Guía de migración detallada
 - ✅ Documentación de API REST
-- ✅ Documentación de SQLite
 - ✅ Ejemplos de uso
 - ✅ Solución de problemas
 - ✅ Índice de documentación (este archivo)
+- ⚠️ Guías de SQLite/migración marcadas como históricas (arquitectura reemplazada por PostgreSQL)
 
 ---
 
@@ -300,6 +281,6 @@ curl -X POST http://localhost:3002/api/clients \
 
 ---
 
-**Última actualización**: 09 de Septiembre de 2026  
-**Versión**: 2.0.0  
+**Última actualización**: 28 de Septiembre de 2026  
+**Versión**: 2.4.0  
 **Estado**: ✅ Completo

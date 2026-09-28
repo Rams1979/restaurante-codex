@@ -1,12 +1,12 @@
 # 🔌 Documentación API REST
 
-**Restaurante Codex - API Server v2.0**
+**Restaurante Codex - API Server v2.4**
 
 ---
 
 ## 📍 Configuración
 
-**Base URL**: `http://localhost:3002`  
+**Base URL**: `http://localhost:3003`  
 **CORS**: Habilitado para `*`  
 **Content-Type**: `application/json`  
 
@@ -97,14 +97,13 @@ Registra un nuevo cliente.
 
 // 400 - Descuento inválido
 {"error": "El descuento debe estar entre 0 y 10"}
-
-// 400 - Nombre duplicado
-{"error": "Cliente ya existe"}
 ```
+
+> Nota: a diferencia de la versión anterior (SQLite), la tabla `clientes` en PostgreSQL **no** tiene constraint `UNIQUE` en `nombre` — el servidor permite crear clientes con el mismo nombre sin devolver error.
 
 **Ejemplo cURL**:
 ```bash
-curl -X POST http://localhost:3002/api/clients \
+curl -X POST http://localhost:3003/api/clients \
   -H "Content-Type: application/json" \
   -d '{
     "nombre": "María López",
@@ -165,7 +164,7 @@ Actualiza datos de un cliente existente.
 
 **Ejemplo cURL**:
 ```bash
-curl -X PUT http://localhost:3002/api/clients/1788968877372 \
+curl -X PUT http://localhost:3003/api/clients/1788968877372 \
   -H "Content-Type: application/json" \
   -d '{
     "edad": "30",
@@ -186,31 +185,34 @@ Obtiene el catálogo completo de productos.
 ```json
 [
   {
-    "codigo": "1",
+    "id": 1,
+    "codigo": "COCA001",
     "descripcion": "Coca Cola",
-    "precio": 1300,
+    "precio": "1300.00",
     "inventario": 50,
     "receta": null,
     "peso": null,
-    "promoNombre": null,
-    "promoCantidad": null,
-    "promoPrecio": null,
-    "createdAt": "2026-09-09T15:00:00.000Z"
+    "promonombre": null,
+    "promocantidad": null,
+    "promoprecio": null,
+    "activo": 1
   },
   {
+    "id": 2,
     "codigo": "RC001",
     "descripcion": "Mojito",
-    "precio": 3500,
+    "precio": "3500.00",
     "inventario": 100,
     "receta": "RC001",
     "peso": null,
-    "promoNombre": "2x1",
-    "promoCantidad": 2,
-    "promoPrecio": 5000,
-    "createdAt": "2026-09-09T15:00:00.000Z"
+    "promonombre": "2x1",
+    "promocantidad": 2,
+    "promoprecio": "5000.00",
+    "activo": 1
   }
 ]
 ```
+`GET /api/products` solo devuelve productos con `activo = 1`. Nota: PostgreSQL convierte los nombres de columna sin comillas a minúsculas, por lo que `promoNombre`/`promoCantidad`/`promoPrecio` llegan como `promonombre`/`promocantidad`/`promoprecio` en la respuesta.
 
 ---
 
@@ -250,16 +252,17 @@ Crea un nuevo producto.
 **Respuesta**: 201 Created
 ```json
 {
+  "id": 22,
   "codigo": "COCA002",
   "descripcion": "Coca Cola Zero",
-  "precio": 1300,
+  "precio": "1300.00",
   "inventario": 30,
   "receta": null,
   "peso": "355ml",
-  "promoNombre": null,
-  "promoCantidad": null,
-  "promoPrecio": null,
-  "createdAt": "2026-09-22T15:00:00.000Z"
+  "promonombre": null,
+  "promocantidad": null,
+  "promoprecio": null,
+  "activo": 1
 }
 ```
 
@@ -268,8 +271,8 @@ Crea un nuevo producto.
 // 400 - Campos faltantes
 {"error": "Faltan campos requeridos"}
 
-// 400 - Código duplicado
-{"error": "Producto ya existe"}
+// 400 - Código duplicado (violación de UNIQUE en `codigo`)
+{"error": "duplicate key value violates unique constraint \"productos_codigo_key\""}
 ```
 
 ---
@@ -297,16 +300,17 @@ Actualiza un producto existente.
 **Respuesta**: 200 OK
 ```json
 {
+  "id": 22,
   "codigo": "COCA002",
   "descripcion": "Coca Cola actualizada",
-  "precio": 1350,
+  "precio": "1350.00",
   "inventario": 45,
   "receta": null,
   "peso": "355ml",
-  "promoNombre": "Combo 2x1",
-  "promoCantidad": 2,
-  "promoPrecio": 2200,
-  "createdAt": "2026-09-22T15:00:00.000Z"
+  "promonombre": "Combo 2x1",
+  "promocantidad": 2,
+  "promoprecio": "2200.00",
+  "activo": 1
 }
 ```
 
@@ -316,16 +320,18 @@ Actualiza un producto existente.
 {"error": "Producto no encontrado"}
 ```
 
+> Nota: `PUT` reemplaza todos los campos editables en una sola sentencia `UPDATE` (no hace merge parcial como `PUT /api/clients/:id`); envía siempre el objeto completo del producto.
+
 ---
 
 ### DELETE /api/products/:codigo
-Elimina un producto del catálogo.
+Inactiva un producto (soft delete: pone `activo = 0`). El registro **no se borra** de la base de datos, solo deja de aparecer en `GET /api/products` y no puede seleccionarse en nuevas órdenes.
 
 **Método**: DELETE  
 
 **Respuesta**: 200 OK
 ```json
-{"message": "Producto eliminado"}
+{"message": "Producto inactivado"}
 ```
 
 **Errores**:
@@ -347,12 +353,12 @@ Obtiene todas las recetas de cócteles.
 ```json
 [
   {
+    "id": 1,
     "codigo": "RC001",
     "nombre": "Mojito",
     "ingredientes": "Ron blanco, azúcar, lima, menta, soda, hielo",
     "instrucciones": "1. Exprimir lima. 2. Agregar azúcar y menta. 3. Macerar...",
-    "tiempo": "5 min",
-    "createdAt": "2026-09-09T15:00:00.000Z"
+    "tiempo": 5
   }
 ]
 ```
@@ -371,7 +377,7 @@ Crea una nueva receta.
   "nombre": "Daiquiri",
   "ingredientes": "Ron blanco, jugo de lima fresco, jarabe simple",
   "instrucciones": "1. Llenar vaso de hielo. 2. Verter ron y jugo de lima...",
-  "tiempo": "3 min"
+  "tiempo": 3
 }
 ```
 
@@ -382,17 +388,17 @@ Crea una nueva receta.
 | `nombre` | string | ✅ |
 | `ingredientes` | string | ❌ |
 | `instrucciones` | string | ❌ |
-| `tiempo` | string | ❌ |
+| `tiempo` | number (minutos) | ❌ |
 
 **Respuesta**: 201 Created
 ```json
 {
+  "id": 6,
   "codigo": "RC003",
   "nombre": "Daiquiri",
   "ingredientes": "Ron blanco, jugo de lima fresco, jarabe simple",
   "instrucciones": "1. Llenar vaso de hielo. 2. Verter ron y jugo de lima...",
-  "tiempo": "3 min",
-  "createdAt": "2026-09-22T15:00:00.000Z"
+  "tiempo": 3
 }
 ```
 
@@ -429,38 +435,135 @@ Elimina una receta.
 
 ---
 
+## 📦 Inventario
+
+### POST /api/inventory
+Rebaja el inventario de uno o varios productos (se llama automáticamente al cobrar una orden).
+
+**Método**: POST  
+
+**Body Requerido**:
+```json
+[
+  { "codigo": "COCA001", "cantidad": 2 },
+  { "codigo": "RC001", "cantidad": 1 }
+]
+```
+
+**Respuesta**: 200 OK
+```json
+{"message": "Inventario actualizado"}
+```
+
+**Errores**:
+```json
+// 400 - Producto no encontrado
+{"error": "Producto no encontrado: COCA001"}
+```
+
+---
+
+## 💰 Caja (Sistema de Caja)
+
+### POST /api/cash-register/open
+Abre una nueva caja con un monto inicial en efectivo.
+
+**Body Requerido**:
+```json
+{ "montoInicial": 50000 }
+```
+
+**Respuesta**: 201 Created — objeto `caja` con `id`, `monto_inicial`, `estado: "abierta"`, `fecha_apertura`.
+
+---
+
+### GET /api/cash-register/current
+Obtiene la caja abierta actualmente, con totales calculados (ventas por método, retiros, gastos, efectivo esperado). Devuelve `{}` si no hay caja abierta.
+
+---
+
+### POST /api/cash-register/movement
+Registra un movimiento de caja (venta, retiro o gasto).
+
+**Body Requerido**:
+```json
+{
+  "cajaId": 3,
+  "tipo": "venta_efectivo",
+  "monto": 1599,
+  "descripcion": "Mesa 4"
+}
+```
+`tipo` puede ser: `venta_efectivo`, `venta_tarjeta`, `venta_sinpe`, `retiro`, `gasto`.
+
+**Respuesta**: 201 Created — el movimiento insertado.
+
+---
+
+### POST /api/cash-register/close
+Cierra la caja abierta. Solo cierra si `efectivoReal` coincide con el efectivo esperado calculado por el servidor (diferencia ≤ 0.01); de lo contrario devuelve 400.
+
+**Body Requerido**:
+```json
+{
+  "cajaId": 3,
+  "efectivoReal": 87400,
+  "pagosTarjeta": 32000,
+  "pagosSinpe": 15600,
+  "notas": "Cierre turno noche"
+}
+```
+
+**Respuesta**: 200 OK — caja actualizada con `estado: "cerrada"`, `monto_cierre`, `diferencia`, `fecha_cierre`.
+
+**Errores**:
+```json
+// 400 - Caja no encontrada o ya cerrada
+{"error": "Caja no encontrada o ya está cerrada"}
+
+// 400 - Descuadre de caja
+{"error": "Diferencia en caja detectada: 500.00. No se puede cerrar."}
+```
+
+---
+
+### GET /api/cash-register/history
+Devuelve todas las cajas con `estado = 'cerrada'`, ordenadas por fecha de cierre descendente.
+
+---
+
 ## 🧪 Testing
 
 ### Con cURL
 
 ```bash
 # Obtener todos los productos
-curl http://localhost:3002/api/products
+curl http://localhost:3003/api/products
 
 # Obtener todos los clientes
-curl http://localhost:3002/api/clients
+curl http://localhost:3003/api/clients
 
 # Obtener todas las recetas
-curl http://localhost:3002/api/recipes
+curl http://localhost:3003/api/recipes
 
 # Crear producto
-curl -X POST http://localhost:3002/api/products \
+curl -X POST http://localhost:3003/api/products \
   -H "Content-Type: application/json" \
   -d '{"codigo":"TEST","descripcion":"Test","precio":1000,"inventario":10}'
 
 # Actualizar cliente
-curl -X PUT http://localhost:3002/api/clients/1788886879105 \
+curl -X PUT http://localhost:3003/api/clients/1788886879105 \
   -H "Content-Type: application/json" \
   -d '{"descuento":7}'
 
 # Eliminar producto
-curl -X DELETE http://localhost:3002/api/products/TEST
+curl -X DELETE http://localhost:3003/api/products/TEST
 ```
 
 ### Con Postman
 
 1. Importar colección: [Postman Collection JSON]
-2. Configurar variable base: `{{baseUrl}}` = `http://localhost:3002`
+2. Configurar variable base: `{{baseUrl}}` = `http://localhost:3003`
 3. Probar endpoints
 
 ### Con JavaScript/Fetch
@@ -526,11 +629,10 @@ Todos los endpoints devuelven errores en este formato:
 ## 📊 Límites y Validación
 
 ### Clientes
-- **Nombre**: Máximo 100 caracteres, debe ser único
-- **Celular**: Máximo 20 caracteres
-- **Edad**: Máximo 3 caracteres
-- **Correo**: Máximo 100 caracteres
-- **Descuento**: 0-10 (rango validado)
+- **Nombre**: `VARCHAR(255)`, no único (puede haber nombres repetidos)
+- **Celular**: `VARCHAR(20)`
+- **Correo**: `VARCHAR(255)`
+- **Descuento**: 0-10 (rango validado por el servidor)
 
 ### Productos
 - **Código**: Máximo 50 caracteres, debe ser único
@@ -555,9 +657,9 @@ Actualmente no hay limitación de requests. Se recomienda implementar en producc
 
 ## 📝 Versión API
 
-**API Version**: 2.0.0  
-**Fecha de lanzamiento**: 09 Septiembre 2026  
-**Servidor**: Node.js + better-sqlite3  
+**API Version**: 2.4.0  
+**Fecha de lanzamiento**: 26 Septiembre 2026  
+**Servidor**: Node.js (`http` nativo) + PostgreSQL (`pg`)  
 
 ---
 
@@ -573,4 +675,4 @@ Actualmente no hay limitación de requests. Se recomienda implementar en producc
 
 ---
 
-**Última actualización**: 09 de Septiembre de 2026
+**Última actualización**: 28 de Septiembre de 2026

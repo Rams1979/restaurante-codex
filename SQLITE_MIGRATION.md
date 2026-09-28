@@ -1,5 +1,7 @@
 # 🗄️ Migración a SQLite
 
+> ⚠️ **Documento histórico/obsoleto**: el sistema fue migrado nuevamente, de SQLite a **PostgreSQL**, desde la v2.3.0 (deploy en Railway). Este documento se conserva solo como referencia de la arquitectura intermedia (v2.0–v2.2). Para la base de datos actual, ver [README.md](README.md) sección "Base de Datos PostgreSQL".
+
 ## Resumen
 El sistema POS ha sido migrado de archivos de texto plano a una base de datos **SQLite**, eliminando la dependencia de archivos Excel y archivos .txt.
 

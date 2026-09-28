@@ -1,5 +1,7 @@
 # 📚 Guía de Migración v1.x → v2.0
 
+> ⚠️ **Documento histórico/obsoleto**: describe la migración a SQLite (v2.0, septiembre 2026). Desde la v2.3.0 el sistema usa **PostgreSQL** (Railway) y estos scripts (`db-init.js`, `migrate-all.js`, etc.) requieren `better-sqlite3`, que ya no es una dependencia del proyecto — **no funcionan**. Para instalación y configuración actual, ver [README.md](README.md).
+
 Migración de **Restaurante Codex** desde sistema basado en archivos a **SQLite**.
 
 ---

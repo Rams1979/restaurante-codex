@@ -17,11 +17,11 @@
 - **10 Asientos de Barra**: Independientes con gestión de clientes registrados
 - **21 Productos en BD**: Catálogo completo con código, descripción, precio e inventario
 - **Inventario Dinámico**: Actualización en tiempo real al agregar/remover productos
-- **Rebajo Automático**: Al cobrar/imprimir, se actualiza automáticamente en SQLite
+- **Rebajo Automático**: Al cobrar/imprimir, se actualiza automáticamente en la base de datos
 - **Persistencia de Inventario**: Al cerrar y reabrirse, los cambios se mantienen
 - **Promociones**: Sistema integrado de promos con precios especiales por cantidad
 
-### 👥 Gestión de Clientes (SQLite)
+### 👥 Gestión de Clientes
 - **Registro Completo**: Nombre, celular, edad, correo (persisten en BD)
 - **Sistema de Descuentos**: Descuentos personalizados por cliente (0-10%)
 - **Edición de Clientes**: Modificar datos con botón ✏️ (excepto nombre)
@@ -116,24 +116,30 @@ cd codex-pos
 # 2. Instalar dependencias
 npm install
 
-# 3. Crear base de datos
-node db-init.js
+# 3. Configurar la conexión a PostgreSQL
+#    Crea un archivo .env (o exporta la variable) con:
+#    DATABASE_URL=postgresql://usuario:password@host:5432/nombre_bd
+#    Puede apuntar a un PostgreSQL local o a la instancia de Railway.
+#    Las tablas se crean automáticamente al iniciar el servidor
+#    (no hace falta correr ningún script de inicialización).
 
-# 4. Migrar datos (si tienes archivos antigios)
-node migrate-all.js
+# 4. Iniciar el API server (puerto 3003)
+node api-server.js
 
-# 5. Iniciar
+# 5. En otra terminal, iniciar el frontend (puerto 3000)
 npm run dev
 ```
 
-O con PowerShell:
+O con PowerShell (inicia ambos procesos):
 ```powershell
 .\start.ps1
 ```
 
-**Frontend**: http://localhost:3001  
+**Frontend (Vite dev server)**: http://localhost:3000  
 **API**: http://localhost:3003  
-**Base de Datos**: SQLite local (codex.db)
+**Base de Datos**: PostgreSQL (local o Railway, según `DATABASE_URL`)
+
+> ℹ️ Los scripts `db-init.js` y `migrate-all.js` son de la versión antigua basada en SQLite (`better-sqlite3`, que ya no es una dependencia del proyecto) y **no funcionan** con la base de datos actual. Se conservan solo como referencia histórica — ver [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md).
 
 ---
 
@@ -143,29 +149,31 @@ O con PowerShell:
 codex-pos/
 ├── src/
 │   ├── components/
-│   │   ├── Cart.jsx                    # Carrito con cálculos
-│   │   ├── ClientRegistration.jsx      # Registro de clientes
-│   │   ├── ClientSelector.jsx          # Selector con búsqueda
-│   │   ├── FileUpload.jsx              # Carga Excel (opcional)
-│   │   ├── ProductList.jsx             # Grid de productos
-│   │   ├── ProductsManager.jsx         # CRUD de productos ⭐
-│   │   ├── RecipesManager.jsx          # CRUD de recetas ⭐
-│   │   ├── RecipeModal.jsx             # Modal de recetas
-│   │   └── TableSelector.jsx           # Grid de mesas/barra
-│   ├── App.jsx                         # Componente principal
-│   ├── App.css                         # Estilos globales
-│   └── main.jsx                        # Punto de entrada
-├── api-server.js                       # API REST Node.js ⭐
-├── db-init.js                          # Creación de BD
-├── migrate-all.js                      # Migración completa ⭐
-├── migrate-excel-to-sqlite.js         # Migración productos/recetas
-├── migrate-clientes-to-sqlite.js      # Migración clientes
-├── vite.config.js                      # Config Vite
-├── codex.db                            # Base de datos SQLite
-├── package.json                        # Dependencias
-└── README.md                           # Este archivo
+│   │   ├── Cart.jsx                       # Carrito con cálculos
+│   │   ├── ClientRegistration.jsx         # Registro de clientes
+│   │   ├── ClientSelector.jsx             # Selector con búsqueda
+│   │   ├── FileUpload.jsx                 # Carga Excel (opcional)
+│   │   ├── ProductList.jsx                # Grid de productos
+│   │   ├── ProductsManager.jsx            # CRUD de productos
+│   │   ├── RecipesManager.jsx             # CRUD de recetas
+│   │   ├── RecipeModal.jsx                # Modal de recetas
+│   │   ├── TableSelector.jsx              # Grid de mesas/barra
+│   │   ├── OpenCashRegister.jsx           # Modal de apertura de caja ⭐
+│   │   ├── CashRegisterDashboard.jsx      # Dashboard de caja en tiempo real ⭐
+│   │   ├── CloseCashRegister.jsx          # Cierre de caja con validación ⭐
+│   │   └── CashRegisterHistory.jsx        # Historial de cajas cerradas ⭐
+│   ├── App.jsx                            # Componente principal
+│   ├── App.css                            # Estilos globales
+│   └── main.jsx                           # Punto de entrada
+├── api-server.js                          # API REST + servidor (Node.js + PostgreSQL)
+├── vite.config.js                         # Config Vite (dev server + proxy /api)
+├── Procfile                               # Comando de arranque en Railway (npm start)
+├── dist/                                  # Build de producción del frontend (servido por api-server.js)
+├── db-init.js, migrate-*.js               # Scripts históricos de la era SQLite (obsoletos)
+├── package.json                           # Dependencias
+└── README.md                              # Este archivo
 
-⭐ = Nuevo en v2.0
+⭐ = Nuevo en v2.4 (sistema de caja + reportes PDF)
 ```
 
 ---
@@ -186,7 +194,7 @@ Hacer clic en "📦 Gestionar Productos":
 ├── Editar: Clic en ✏️ → Modificar → 💾 Guardar
 └── Eliminar: Clic en 🗑️ → Confirmar
 ```
-Los cambios se guardan inmediatamente en SQLite.
+Los cambios se guardan inmediatamente en la base de datos.
 
 ### 3️⃣ Gestionar Recetas (Base de Datos)
 ```
@@ -217,7 +225,7 @@ Clic en "➕ Nuevo Cliente":
 ├── Correo
 └── Descuento 0-10% (opcional)
 ```
-Se guardan automáticamente en SQLite.
+Se guardan automáticamente en la base de datos.
 
 ### 5️⃣ Crear Orden
 ```
@@ -349,69 +357,51 @@ TOTAL:             ₡7,910.00
 
 ---
 
-## 🗄️ Base de Datos SQLite
+## 🗄️ Base de Datos PostgreSQL
+
+Las tablas se crean automáticamente (`CREATE TABLE IF NOT EXISTS`) la primera vez que arranca `api-server.js`, usando la conexión definida en `DATABASE_URL`.
 
 ### Tablas
 
 #### `productos`
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `codigo` | TEXT PK | ID único del producto |
+| `id` | SERIAL PK | ID interno autogenerado |
+| `codigo` | VARCHAR(50) UNIQUE | Código del producto |
 | `descripcion` | TEXT | Nombre del producto |
-| `precio` | REAL | Precio unitario en ₡ |
+| `precio` | DECIMAL(10,2) | Precio unitario en ₡ |
 | `inventario` | INT | Stock disponible |
 | `receta` | TEXT | Código de receta (cócteles) |
-| `peso` | TEXT | Peso o volumen |
-| `promoNombre` | TEXT | Nombre de la promoción |
+| `peso` | VARCHAR(50) | Peso o volumen |
+| `promoNombre` | VARCHAR(255) | Nombre de la promoción |
 | `promoCantidad` | INT | Cantidad en promo |
-| `promoPrecio` | REAL | Precio de promo |
+| `promoPrecio` | DECIMAL(10,2) | Precio de promo |
+| `activo` | INT | 1 = activo, 0 = inactivado (soft delete) |
 
 #### `recetas`
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `codigo` | TEXT PK | ID único de receta |
-| `nombre` | TEXT | Nombre del cóctel |
+| `id` | SERIAL PK | ID interno autogenerado |
+| `codigo` | VARCHAR(50) UNIQUE | Código de la receta |
+| `nombre` | VARCHAR(255) | Nombre del cóctel |
 | `ingredientes` | TEXT | Lista de ingredientes |
 | `instrucciones` | TEXT | Pasos de preparación |
-| `tiempo` | TEXT | Tiempo de preparación |
+| `tiempo` | INT | Tiempo de preparación (minutos) |
 
 #### `clientes`
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | INT PK | ID único |
-| `nombre` | TEXT UNIQUE | Nombre completo |
-| `celular` | TEXT | Número de contacto |
-| `edad` | TEXT | Edad del cliente |
-| `correo` | TEXT | Email |
+| `id` | SERIAL PK | ID único |
+| `nombre` | VARCHAR(255) | Nombre completo (no obligado a ser único en BD) |
+| `celular` | VARCHAR(20) | Número de contacto |
+| `edad` | INT | Edad del cliente |
+| `correo` | VARCHAR(255) | Email |
 | `descuento` | INT | % descuento (0-10) |
-| `fecha` | DATETIME | Fecha de registro |
+| `fecha` | TIMESTAMP | Fecha de registro |
 
-#### `órdenes`
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `id` | INT PK | ID de orden |
-| `numeroMesa` | TEXT | Mesa o asiento |
-| `cliente_id` | INT FK | Referencia a cliente |
-| `subtotal` | REAL | Antes de impuesto |
-| `descuento` | REAL | Monto de descuento |
-| `impuesto` | REAL | Impuesto (13%) |
-| `servicio` | REAL | Servicio (10% mesas) |
-| `total` | REAL | Total final |
-| `estado` | TEXT | pendiente/cobrado |
-| `createdAt` | DATETIME | Fecha/hora |
+> ⚠️ **Nota**: las órdenes/ventas en curso viven solo en el estado de React (memoria del navegador) y se documentan como comprobante en el PDF generado al cobrar — **no se persisten en tablas `órdenes`/`órdenes_items`**. Guardar el historial de órdenes en base de datos sigue pendiente (ver "Próximas Mejoras Sugeridas").
 
-#### `órdenes_items`
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `id` | INT PK | ID del item |
-| `orden_id` | INT FK | Orden asociada |
-| `codigo` | TEXT | Producto |
-| `descripcion` | TEXT | Nombre producto |
-| `cantidad` | INT | Cantidad |
-| `precio` | REAL | Precio unitario |
-| `isPromo` | INT | Es promoción? |
-
-#### `cajas` (NUEVO)
+#### `cajas`
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
 | `id` | SERIAL PK | ID único de caja |
@@ -440,18 +430,18 @@ TOTAL:             ₡7,910.00
 ## 🔌 API REST
 
 ### Servidor
-- **Dirección**: http://localhost:3003
+- **Dirección**: http://localhost:3003 (local) — configurable con la variable `PORT`
 - **Puerto**: 3003
-- **CORS**: Habilitado para localhost
+- **CORS**: Habilitado para cualquier origen (`Access-Control-Allow-Origin: *`)
 
 ### Endpoints
 
 #### Productos
 ```
-GET    /api/products              # Obtener todos
+GET    /api/products              # Obtener todos los productos activos
 POST   /api/products              # Crear producto
 PUT    /api/products/:codigo      # Actualizar
-DELETE /api/products/:codigo      # Eliminar
+DELETE /api/products/:codigo      # Inactivar (soft delete, no elimina el registro)
 ```
 
 #### Recetas
@@ -459,7 +449,7 @@ DELETE /api/products/:codigo      # Eliminar
 GET    /api/recipes               # Obtener todas
 POST   /api/recipes               # Crear receta
 PUT    /api/recipes/:codigo       # Actualizar
-DELETE /api/recipes/:codigo       # Eliminar
+DELETE /api/recipes/:codigo       # Eliminar definitivamente
 ```
 
 #### Clientes
@@ -485,7 +475,7 @@ GET    /api/cash-register/history           # Obtener historial de cajas cerrada
 
 ### Ejemplo: Agregar Producto
 ```bash
-curl -X POST http://localhost:3002/api/products \
+curl -X POST http://localhost:3003/api/products \
   -H "Content-Type: application/json" \
   -d '{
     "codigo": "COCA001",
@@ -497,44 +487,19 @@ curl -X POST http://localhost:3002/api/products \
 
 ---
 
-## 🔄 Migración de Datos
+## 🔄 Migración de Datos (histórico, era SQLite)
 
-### Script Unificado (Recomendado)
-```bash
-node migrate-all.js
-```
-Migra automáticamente:
-- ✅ 21 productos desde `productos.xlsx`
-- ✅ 5 recetas desde `recetas.xlsx`
-- ✅ 6 clientes desde `clientes.txt`
-
-### Scripts Individuales
-```bash
-node migrate-excel-to-sqlite.js      # Solo productos + recetas
-node migrate-clientes-to-sqlite.js   # Solo clientes
-```
-
-### Resultado Esperado
-```
-🔄 Iniciando migración de datos a SQLite...
-
-📦 Migrando productos...
-  ✅ 21 productos
-
-🍹 Migrando recetas...
-  ✅ 5 recetas
-
-👤 Migrando clientes...
-  ✅ 6 clientes
-
-═══════════════════════════════════
-✅ Migración completada!
-═══════════════════════════════════
-```
+Los scripts `migrate-all.js`, `migrate-excel-to-sqlite.js` y `migrate-clientes-to-sqlite.js` importaban datos de Excel/texto hacia la antigua base **SQLite** (`codex.db`). Dependen de `better-sqlite3`, que **ya no está instalado** (no aparece en `package.json`), así que actualmente **no funcionan**. Se conservan como referencia histórica — ver [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md). Para cargar productos hoy, usa el botón "📁 Cargar Excel" en la app (lee el archivo en el navegador) y luego "📦 Gestionar Productos" para guardarlos en PostgreSQL vía la API.
 
 ---
 
 ## ⚙️ Configuración
+
+### Variables de Entorno (api-server.js)
+| Variable | Requerida | Descripción |
+|----------|-----------|-------------|
+| `DATABASE_URL` | ✅ | Cadena de conexión a PostgreSQL (local o Railway) |
+| `PORT` | ❌ | Puerto del API server (default: `3003`) |
 
 ### Vite (vite.config.js)
 ```javascript
@@ -543,28 +508,25 @@ server: {
   open: true,                    // Abrir navegador
   proxy: {
     '/api': {
-      target: 'http://localhost:3002',
+      target: 'http://localhost:3003',
       changeOrigin: true
     }
   }
 }
 ```
 
-### Base de Datos (api-server.js)
-```javascript
-db.pragma('journal_mode = WAL')  // Write-Ahead Logging
-                                 // Mejor concurrencia
-```
+En producción (Railway) no se usa Vite ni el proxy: `npm start` corre `api-server.js`, que sirve el build estático (`dist/`) y la API en el mismo puerto (`PORT`).
 
 ---
 
 ## 🛡️ Seguridad
 
-✅ **Prepared Statements**: Prevención de SQL injection  
+✅ **Prepared Statements**: Prevención de SQL injection (`pg` con parámetros `$1, $2...`)  
 ✅ **Validación Servidor**: Todos los datos validados  
-✅ **CORS Habilitado**: Solo localhost  
+✅ **CORS Habilitado**: Para cualquier origen (`*`) — sin restricción a localhost  
 ✅ **Descuentos Validados**: Rango 0-10% forzado  
-✅ **Nombres Únicos**: No se permiten clientes duplicados  
+⚠️ **Nombres de Cliente No Únicos**: la tabla `clientes` ya no tiene constraint `UNIQUE` en `nombre` (sí lo tenía en la versión SQLite); el servidor no valida duplicados  
+⚠️ **Sin autenticación**: La API no requiere login ni API key (ver "Próximas Mejoras Sugeridas")  
 
 ---
 
@@ -582,37 +544,38 @@ db.pragma('journal_mode = WAL')  // Write-Ahead Logging
 
 ### "API no disponible"
 ```bash
-# Verificar puerto 3002
-netstat -ano | findstr :3002
+# Verificar puerto 3003
+netstat -ano | findstr :3003
 
-# Reiniciar servidor
-npm run dev
+# Reiniciar el API server
+node api-server.js
 ```
 
-### "No se cargan productos"
+### "AggregateError [ECONNREFUSED]" / "No se cargan productos"
+Causa más común: `DATABASE_URL` no está definida o el PostgreSQL destino no está accesible.
 ```bash
-# Verificar BD existe
-ls -la codex.db
+# Verificar que la variable está definida (PowerShell)
+echo $env:DATABASE_URL
 
-# Reinicializar
-node db-init.js
-node migrate-all.js
+# Probar conexión directa
+psql "$env:DATABASE_URL" -c "\dt"
 ```
+Si no tienes PostgreSQL local ni Docker, puedes instalar PostgreSQL (`winget install PostgreSQL.PostgreSQL`) o usar el `DATABASE_URL` de la base de Railway.
 
 ### "Cliente no se guarda"
 ```bash
-# Ver logs
+# Ver logs del servidor
 node api-server.js
 
-# Verificar conexión BD
-sqlite3 codex.db ".tables"
+# Verificar tablas en PostgreSQL
+psql "$env:DATABASE_URL" -c "\dt"
 ```
 
 ### "Error de CORS"
 ```bash
-# Ya está configurado, pero si falla:
-# Verificar que API está en http://localhost:3002
-# Verificar proxy en vite.config.js
+# El servidor ya envía Access-Control-Allow-Origin: * en todas las respuestas.
+# Si falla, verifica que el frontend apunte al puerto correcto (3003)
+# y que el proxy '/api' en vite.config.js tenga ese mismo puerto.
 ```
 
 ---
@@ -628,10 +591,10 @@ console.log('Cliente guardado exitosamente:', newClient.id)
 
 ### Ver estado de BD
 ```bash
-sqlite3 codex.db
+psql "$env:DATABASE_URL"
 
 # Ver tablas
-.tables
+\dt
 
 # Contar registros
 SELECT COUNT(*) FROM productos;
@@ -640,6 +603,9 @@ SELECT COUNT(*) FROM recetas;
 
 # Ver clientes
 SELECT nombre, descuento FROM clientes;
+
+# Salir
+\q
 ```
 
 ---
@@ -662,7 +628,7 @@ SELECT nombre, descuento FROM clientes;
 Para reportar bugs o sugerir mejoras:
 - Contactar equipo de desarrollo
 - Revisar logs en consola del navegador
-- Consultar base de datos SQLite
+- Consultar la base de datos PostgreSQL (`psql "$DATABASE_URL"`)
 
 ---
 
